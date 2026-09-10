@@ -368,10 +368,20 @@ function availableDrinks(lid){
   const used = S().noRepeatDrinks ? usedDrinks(lid) : [];
   return drinks().filter(d => !rej.includes(d.name) && !used.includes(d.name));
 }
-let heroFail = null;                                  /* Bild-URL, die nicht geladen werden konnte */
-const heroSrc = () => (S().heroImage || 'assets/aron.jpg');
-const heroOk  = () => !!heroSrc() && heroFail !== heroSrc();
-function heroBroke(){ if(heroFail === heroSrc()) return; heroFail = heroSrc(); render(); }
+/* Bild: erst settings.heroImage, danach der Reihe nach die Dateien im Repo.
+   Was nicht laedt, wird gemerkt und uebersprungen – so ist die Endung egal. */
+const HERO_FILES = ['assets/aron.jpg','assets/aron.jpeg','assets/aron.png','assets/aron.webp','assets/aron.JPG'];
+const heroFails = new Set();
+function heroSrc(){
+  const set = String(S().heroImage||'').trim();
+  return (set ? [set, ...HERO_FILES] : HERO_FILES).find(p => !heroFails.has(p)) || '';
+}
+const heroOk = () => !!heroSrc();
+function heroBroke(ev){                               /* markiert genau die Quelle, die fehlschlug */
+  const el = ev && ev.currentTarget, src = (el && el.getAttribute('src')) || heroSrc();
+  if(!src || heroFails.has(src)) return;
+  heroFails.add(src); render();
+}
 
 /* ───────────────────────── UI-Zustand ───────────────────────── */
 const ui = { tab:'rank', sipsBar:null, wheelLoc:null, spinning:false, angle:0, result:null, open:{}, pwWrong:false, logMax:60 };
@@ -595,12 +605,14 @@ function viewAdmin(){
     <label class="chk"><input type="checkbox" data-a="setnorep" data-k="setnorep" ${S().noRepeatDrinks?'checked':''}> Getränke bar-übergreifend nicht wiederholen</label>
     <div class="sep"></div>
     <div class="field"><span>Bild (Aron)</span>
-      <input type="text" value="${isImg(S().heroImage)&&String(S().heroImage).startsWith('data:')?'':esc(S().heroImage||'')}" placeholder="Bild-URL oder leer für assets/aron.jpg" data-a="setimg" data-k="setimg">
+      <input type="text" value="${String(S().heroImage||'').startsWith('data:')?'':esc(S().heroImage||'')}" placeholder="Bild-URL oder leer für assets/aron.jpg" data-a="setimg" data-k="setimg">
       <div class="btnrow" style="margin-top:8px">
         <label class="btn mini">📷 Foto hochladen<input type="file" accept="image/*" data-a="imgfile" style="display:none"></label>
         ${S().heroImage?`<button class="btn mini bad" data-a="imgclr">Bild entfernen</button>`:''}
       </div>
-      <div class="hint" style="margin-top:6px">Upload wird verkleinert und in der DB gespeichert – erscheint auf allen Geräten. ${String(S().heroImage||'').startsWith('data:')?'<b>Aktuell: hochgeladenes Foto.</b>':''}</div>
+      <div class="hint" style="margin-top:6px">Upload wird verkleinert und in der DB gespeichert – erscheint auf allen Geräten.
+        Ohne Eintrag nimmt die App <code>assets/aron.jpg</code> (auch .jpeg/.png/.webp).
+        ${String(S().heroImage||'').startsWith('data:')?'<b>Aktuell: hochgeladenes Foto.</b>':''}</div>
     </div>
     <div class="sep"></div>
     <div class="b" style="margin-bottom:8px">Getränke (${drinks().length})</div>

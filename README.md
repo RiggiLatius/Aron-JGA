@@ -64,19 +64,22 @@ hat, gewinnt.** Alle anderen verfolgen den Stand über denselben Link, read-only
 
 ---
 
-## 2. Das Foto von Aron einsetzen
+## 2. Das Foto von Aron
 
-Es gibt zwei Wege, beide brauchen **keinen** Code-Eingriff:
+Das Foto liegt als **`assets/aron.jpg`** im Repo und wird ohne weiteres Zutun
+angezeigt: klein und rund in der Kopfzeile, groß als Banner über der Rangliste.
 
-* **Vom Handy hochladen (empfohlen):** Admin-Tab → *Einstellungen & Getränke* →
-  **📷 Foto hochladen**. Das Bild wird auf max. 900 px verkleinert und in der DB
-  gespeichert – es erscheint sofort auf **allen** Geräten (Kopfzeile + Rangliste).
-* **Als Datei im Repo:** Foto als `assets/aron.jpg` ins Repo legen. Die App nimmt
-  diesen Pfad automatisch, wenn im Feld *Bild* nichts anderes steht.
-* Alternativ eine beliebige Bild-URL in das Feld *Bild* eintragen.
+Austauschen oder überschreiben geht auf drei Wegen, alle **ohne** Code-Eingriff:
 
-Ist kein Bild vorhanden, zeigt die Rangliste einen schlichten Banner – nichts
-bricht.
+* **Datei ersetzen:** neues `assets/aron.jpg` ins Repo. Die Endung ist egal – die
+  App probiert `assets/aron.jpg`, `.jpeg`, `.png`, `.webp` und `.JPG` der Reihe
+  nach und nimmt die erste Datei, die lädt.
+* **Vom Handy hochladen:** Admin-Tab → *Einstellungen & Getränke* →
+  **📷 Foto hochladen**. Das Bild wird auf max. 900 px verkleinert, in der DB
+  gespeichert und erscheint sofort auf **allen** Geräten. Sticht die Repo-Datei aus.
+* **Bild-URL** in das Feld *Bild* eintragen.
+
+Lädt keins davon, zeigt die Rangliste einen schlichten Banner – nichts bricht.
 
 ---
 
