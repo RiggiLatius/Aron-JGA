@@ -92,8 +92,10 @@ Vier Tabs unten:
 | **Rad** | Glücksrad aus der Getränkeliste, ~3 s Animation. Danach **Passt** oder **Gibt's hier nicht** (sperrt das Getränk für diese Bar, neuer Dreh). Darunter „Getränk manuell wählen" als Fallback. |
 | **Admin** | Nach Passwort. Alles Weitere. |
 
-**Passwort:** Standard `aron2026`, steht in `settings.password` und ist im
-Admin-Tab änderbar. Nach der Eingabe wird es im `localStorage` des Geräts
+**Passwort:** Standard `Ehemann Möse`, steht in `settings.password` und ist im
+Admin-Tab änderbar (`DEFAULT_PW` oben in `index.html` greift nur bei einer noch
+leeren Datenbank). Auf dem Login-Screen steht es absichtlich **nicht** – sonst
+könnte es jeder in der Gruppe ablesen. Nach der Eingabe wird es im `localStorage` des Geräts
 gemerkt – man muss es also nur einmal pro Handy eintippen. Wer das Passwort nicht
 hat, sieht alles, kann aber nichts ändern (Drehen darf jeder, bestätigen nur der
 Admin).
@@ -115,7 +117,9 @@ dort nicht mit.
   einem **Wiederherstellen**-Button pro Eintrag. Gelöschte Teilnehmer zählen nicht
   in der Rangliste, ihre Schluck-Werte kommen beim Wiederherstellen komplett zurück.
 * **Änderungsprotokoll** unter `/aron-jga/log`, append-only: pro Änderung ein
-  Eintrag mit Zeitstempel, Art, betroffenem Pfad, **altem und neuem Wert**. Im
+  Eintrag mit Zeitstempel, Art, betroffenem Pfad, **altem und neuem Wert**.
+  Wer ein Feld antippt und den Wert unverändert lässt, erzeugt keinen Eintrag –
+  gleiche Werte werden gar nicht geschrieben. Im
   Admin-Tab als Liste („21:14 – Schlücke Tobi @ Mos Eisley: 6 → 4"), neueste oben,
   jeder Eintrag mit **↩︎ = auf alten Wert zurücksetzen**. State-Änderung und
   Log-Eintrag gehen immer in **einem** `update()` mit Multi-Path-Keys raus – es gibt
@@ -142,7 +146,7 @@ dort nicht mit.
 {
   settings: {
     eventName: "Aron JGA",
-    password: "aron2026",
+    password: "Ehemann Möse",
     skipMalus: 3,           // Aufschlag auf den Bar-Durchschnitt bei "ausgesetzt"
     noRepeatDrinks: false,  // Getränke bar-übergreifend nicht wiederholen
     heroImage: ""           // Bild-URL oder data:-URI, leer = assets/aron.jpg

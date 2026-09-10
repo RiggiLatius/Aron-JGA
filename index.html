@@ -181,6 +181,10 @@ const FIREBASE_CONFIG = {
    Regionen der Reihe nach durch und merkt sich die, die antwortet. Die Region
    beim Anlegen der Datenbank ist damit egal.                                  */
 const DB_REGIONS = ['europe-west1','us-central1','asia-southeast1'];
+/* Admin-Passwort. Gilt nur fuer eine frische Datenbank – sobald die App einmal
+   gestartet ist, lebt das Passwort in settings.password und wird ausschliesslich
+   im Admin-Tab geaendert.                                                     */
+const DEFAULT_PW = "Ehemann Möse";
 const ROOT     = "aron-jga";   // DB-Pfade: /aron-jga/data  und  /aron-jga/log
 const LOG_MAX  = 500;          // älteste Log-Einträge rollen raus
 /* ════════════════════ ENDE CONFIG – ab hier nichts mehr eintragen ════ */
@@ -235,6 +239,13 @@ const nid = p => p + Date.now().toString(36).slice(-5) + Math.floor(Math.random(
 const clone = o => JSON.parse(JSON.stringify(o===undefined?null:o));
 const getPath = (o,p) => p.split('/').reduce((a,k)=> (a==null?undefined:a[k]), o);
 const clean = v => v===undefined ? null : v;
+/* Vergleichbare Form: Objekt-Keys sortiert, damit ein unveraenderter Wert auch
+   dann als unveraendert erkannt wird, wenn die DB die Keys anders sortiert.  */
+const stable = v => JSON.stringify((function w(x){
+  if(Array.isArray(x)) return x.map(w);
+  if(x && typeof x==='object') return Object.keys(x).sort().reduce((a,k)=>{ a[k]=w(x[k]); return a; },{});
+  return x===undefined ? null : x;
+})(v));
 const isImg = v => typeof v==='string' && (v.startsWith('data:image') || /\.(jpe?g|png|webp|gif|heic)(\?|$)/i.test(v));
 function setPath(root,path,val){
   const ks = path.split('/'); let o = root;
@@ -304,9 +315,12 @@ let D = {}, L = {}, dbError = null;   // D = /aron-jga/data , L = /aron-jga/log
 async function tx(changes, meta){
   const upd = {}, rec = [];
   for(const [p,v] of Object.entries(changes)){
+    const before = getPath(D,p);
+    if(stable(before) === stable(clean(v))) continue;   /* unveraendert -> kein Write, kein Log */
     upd['data/'+p] = clean(v);
-    rec.push({ path:p, from: clean(clone(getPath(D,p))), to: clean(clone(v)) });
+    rec.push({ path:p, from: clean(clone(before)), to: clean(clone(v)) });
   }
+  if(!rec.length) return;                               /* nichts hat sich geaendert */
   const e = { ts: Date.now(), type: (meta&&meta.type) || 'edit', label: (meta&&meta.label) || 'Änderung', changes: rec };
   if(rec.length===1){ e.path = rec[0].path; e.from = rec[0].from; e.to = rec[0].to; }
   upd['log/'+store.newLogKey()] = e;
@@ -346,7 +360,7 @@ function seedPayload(){
     locations['l'+(i+1)] = { name:l[0], address:l[1], order:i+1, status:'pending', drink:null, rejected:[], deleted:false };
   });
   return {
-    settings:     { eventName:'Aron JGA', password:'aron2026', skipMalus:3, noRepeatDrinks:false, heroImage:'' },
+    settings:     { eventName:'Aron JGA', password:DEFAULT_PW, skipMalus:3, noRepeatDrinks:false, heroImage:'' },
     participants: {},
     locations,
     results:      {},
@@ -439,7 +453,7 @@ function heroBroke(ev){                               /* markiert genau die Quel
 const ui = { tab:'rank', sipsBar:null, wheelLoc:null, spinning:false, angle:0, result:null, open:{}, pwWrong:false, logMax:60 };
 let admin = false;
 const ADMIN_KEY = 'aron-jga-admin';
-function checkAdmin(){ const pw = localStorage.getItem(ADMIN_KEY); admin = !!pw && pw === String(S().password ?? 'aron2026'); return admin; }
+function checkAdmin(){ const pw = localStorage.getItem(ADMIN_KEY); admin = !!pw && pw === String(S().password ?? DEFAULT_PW); return admin; }
 function needAdmin(){ if(admin) return true; toast('Nur im Admin-Modus'); go('admin'); return false; }
 
 const STAT = { pending:['offen',''], active:['aktiv','a'], done:['abgeschlossen','d'] };
@@ -583,7 +597,7 @@ function viewAdmin(){
       ${ui.pwWrong?`<div class="warn" style="margin-bottom:10px">Passwort falsch.</div>`:''}
       <div class="field"><span>Passwort</span><input type="password" data-a="pw" data-k="pw" placeholder="••••••••" autocomplete="current-password"></div>
       <button class="btn pri big" data-a="login">Einloggen</button>
-      <div class="hint" style="margin-top:10px">Standard: <code>aron2026</code> – im Admin-Tab änderbar.</div></div>`;
+      <div class="hint" style="margin-top:10px">Nur wer die Schlücke einträgt, braucht das Passwort. Alle anderen sehen den Stand über denselben Link.</div></div>`;
   }
   const ps = parts(), ls = locsAll(), lsv = locs();
   const lid = ui.sipsBar && lsv.some(l=>l.id===ui.sipsBar) ? ui.sipsBar : (lsv[0]||{}).id;
@@ -859,7 +873,7 @@ document.addEventListener('click', async e => {
     case 'editbar': ui.sipsBar = lid; ui.open.sips = true; ui.wheelLoc = lid; go('admin'); break;
     case 'login': {
       const inp = document.querySelector('[data-a="pw"]'); const pw = inp ? inp.value : '';
-      if(pw && pw === String(S().password ?? 'aron2026')){ localStorage.setItem(ADMIN_KEY, pw); ui.pwWrong = false; checkAdmin(); toast('Admin-Modus aktiv'); }
+      if(pw && pw === String(S().password ?? DEFAULT_PW)){ localStorage.setItem(ADMIN_KEY, pw); ui.pwWrong = false; checkAdmin(); toast('Admin-Modus aktiv'); }
       else ui.pwWrong = true;
       render(); break; }
     case 'logout': localStorage.removeItem(ADMIN_KEY); admin = false; render(); break;
@@ -982,8 +996,16 @@ document.addEventListener('change', async e => {
     case 'dname': await tx({ ['drinks/'+i+'/name']: val.trim() }, { type:'drink-name', label:'Getränk umbenannt' }); break;
     case 'setname': await tx({ 'settings/eventName': val.trim() }, { type:'settings', label:'Event-Name' }); break;
     case 'setpw': { const pw = val.trim(); if(!pw){ toast('Passwort darf nicht leer sein'); render(); return; }
-      await tx({ 'settings/password': pw }, { type:'settings', label:'Passwort geändert' });
-      localStorage.setItem(ADMIN_KEY, pw); toast('Passwort geändert – alter Zugang gilt nicht mehr'); break; }
+      /* Erst das Geraet umstellen, dann schreiben: der onValue-Callback kommt
+         sonst zurueck, bevor das neue Passwort hier liegt – und wirft den
+         Admin fuer einen Render aus dem Admin-Tab.                          */
+      const prev = localStorage.getItem(ADMIN_KEY);
+      try {
+        localStorage.setItem(ADMIN_KEY, pw);
+        await tx({ 'settings/password': pw }, { type:'settings', label:'Passwort geändert' });
+      } catch(err){ if(prev===null) localStorage.removeItem(ADMIN_KEY); else localStorage.setItem(ADMIN_KEY, prev); throw err; }
+      checkAdmin(); render();
+      toast('Passwort geändert – alter Zugang gilt nicht mehr'); break; }
     case 'setmalus': await tx({ 'settings/skipMalus': Math.max(0, Math.round(num(val,3))) }, { type:'settings', label:'Malus für „ausgesetzt"' }); break;
     case 'setnorep': await tx({ 'settings/noRepeatDrinks': el.checked }, { type:'settings', label:'Getränke nicht wiederholen' }); break;
     case 'setimg': await tx({ 'settings/heroImage': val.trim() }, { type:'image', label:'Bild-URL' }); break;
