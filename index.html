@@ -168,20 +168,63 @@ nav.tabs button.on{color:var(--ac)}
    Wichtig ist vor allem "databaseURL". Solange dort "HIER_" steht,
    läuft die App im Demo-Modus (Daten nur auf diesem Gerät).            */
 const FIREBASE_CONFIG = {
-  apiKey:            "HIER_API_KEY",
-  authDomain:        "HIER_PROJEKT.firebaseapp.com",
-  databaseURL:       "https://HIER_PROJEKT-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId:         "HIER_PROJEKT",
-  storageBucket:     "HIER_PROJEKT.appspot.com",
-  messagingSenderId: "HIER_SENDER_ID",
-  appId:             "HIER_APP_ID"
+  apiKey:            "AIzaSyCEjXjy_bJahEaTU8xaRiZ5RT70FA1tD00",
+  authDomain:        "aron-jga.firebaseapp.com",
+  databaseURL:       "",   // darf leer bleiben – siehe DB_REGIONS unten
+  projectId:         "aron-jga",
+  storageBucket:     "aron-jga.firebasestorage.app",
+  messagingSenderId: "800681281414",
+  appId:             "1:800681281414:web:3f513d9f27572e17aece07"
 };
+/* Die Adresse der Realtime Database steht nur dann im Firebase-Snippet, wenn die
+   Datenbank schon existiert. Ist "databaseURL" oben leer, probiert die App diese
+   Regionen der Reihe nach durch und merkt sich die, die antwortet. Die Region
+   beim Anlegen der Datenbank ist damit egal.                                  */
+const DB_REGIONS = ['europe-west1','us-central1','asia-southeast1'];
 const ROOT     = "aron-jga";   // DB-Pfade: /aron-jga/data  und  /aron-jga/log
 const LOG_MAX  = 500;          // älteste Log-Einträge rollen raus
 /* ════════════════════ ENDE CONFIG – ab hier nichts mehr eintragen ════ */
 
 const SDK = "https://www.gstatic.com/firebasejs/10.12.5/";
-const FB_OK = /^https:\/\//.test(FIREBASE_CONFIG.databaseURL) && !/HIER_/.test(FIREBASE_CONFIG.databaseURL);
+/* ?demo=1 an den Link haengen -> App laeuft nur auf diesem Geraet, ohne DB.
+   Praktisch zum Ausprobieren, ohne den echten Abend-Stand anzufassen.        */
+const DEMO  = /[?&]demo=1/.test(location.search);
+const FB_OK = !DEMO && !!FIREBASE_CONFIG.projectId && !/HIER_/.test(JSON.stringify(FIREBASE_CONFIG));
+
+/* Mögliche Adressen der Standard-Datenbank dieses Projekts */
+function dbCandidates(){
+  const inst = FIREBASE_CONFIG.projectId + '-default-rtdb';
+  const list = [String(FIREBASE_CONFIG.databaseURL||'').trim()];
+  DB_REGIONS.forEach(r => {
+    if(r === 'us-central1') list.push(`https://${inst}.firebaseio.com`);
+    list.push(`https://${inst}.${r}.firebasedatabase.app`);
+  });
+  return [...new Set(list.filter(u => /^https:\/\/[^ ]+$/.test(u) && !/HIER_/.test(u)))]
+         .map(u => u.replace(/\/+$/,''));
+}
+/* Erste Adresse suchen, die tatsächlich eine Datenbank liefert.
+   404 = dort gibt es keine; 401/403 = existiert, aber die Regeln sperren.     */
+const DB_CACHE = 'aron-jga-dburl';
+let dbNotFound = false;
+async function resolveDbUrl(){
+  const cands = dbCandidates();
+  if(!cands.length) return '';
+  let cached = null; try { cached = localStorage.getItem(DB_CACHE); } catch(e){}
+  if(cached && cands.includes(cached)) return cached;
+  let saw404 = 0;
+  for(const u of cands){
+    try{
+      const r = await fetch(u + '/.json?shallow=true', { cache:'no-store' });
+      if(r.status === 404){ saw404++; continue; }
+      if(r.ok || r.status === 401 || r.status === 403){
+        try { localStorage.setItem(DB_CACHE, u); } catch(e){}
+        return u;
+      }
+    } catch(e){ /* Netzwerk oder CORS – nächste Adresse probieren */ }
+  }
+  dbNotFound = saw404 === cands.length;   // überall 404 -> Datenbank noch nicht angelegt
+  return cands[0];
+}
 
 /* ───────────────────────── kleine Helfer ───────────────────────── */
 const $  = s => document.querySelector(s);
@@ -220,15 +263,24 @@ let store = null, LOCAL_KEY = 'aron-jga-local';
 
 async function initStore(){
   if(FB_OK){
-    const [{ initializeApp }, dbm] = await Promise.all([ import(SDK+'firebase-app.js'), import(SDK+'firebase-database.js') ]);
+    const [{ initializeApp }, dbm, url] = await Promise.all([
+      import(SDK+'firebase-app.js'), import(SDK+'firebase-database.js'), resolveDbUrl()
+    ]);
     const { getDatabase, ref, onValue, update, push } = dbm;
-    const db = getDatabase(initializeApp(FIREBASE_CONFIG));
+    if(!url) throw new Error('Keine databaseURL – Realtime Database im Firebase-Projekt anlegen.');
+    if(dbNotFound) throw new Error('Im Projekt "'+FIREBASE_CONFIG.projectId+'" gibt es noch keine Realtime Database. In der Firebase Console anlegen (Build → Realtime Database → Datenbank erstellen).');
+    const db = getDatabase(initializeApp(FIREBASE_CONFIG), url);
     const rootRef = ref(db, ROOT);
     store = {
-      mode:'firebase',
+      mode:'firebase', url,
       newLogKey: () => push(ref(db, ROOT+'/log')).key,
       update: o => update(rootRef, o),
-      subscribe: cb => onValue(rootRef, s => cb(s.val()||{}), err => { setConn('Fehler','bad'); toast('DB-Fehler: '+err.message); })
+      subscribe: cb => onValue(rootRef, s => { dbError = null; cb(s.val()||{}); }, err => {
+        dbError = /permission|denied/i.test(err.message)
+          ? 'Die DB-Regeln blockieren den Zugriff. In der Firebase Console → Realtime Database → Regeln auf ".read": true und ".write": true setzen und veröffentlichen.'
+          : err.message;
+        setConn('Fehler','bad'); render();
+      })
     };
   } else {
     let n = 0, subs = [];
@@ -245,7 +297,7 @@ async function initStore(){
 function setConn(txt, kind){ const el=$('#conn'); el.textContent=txt; el.className='pill '+(kind||''); }
 
 /* ─────────────────── Schreiben: State + Log immer zusammen ─────────────────── */
-let D = {}, L = {};   // D = /aron-jga/data , L = /aron-jga/log
+let D = {}, L = {}, dbError = null;   // D = /aron-jga/data , L = /aron-jga/log
 
 /* changes: { "relativer/pfad/in/data": neuerWert }  – null loescht
    meta:    { type, label }                                                     */
@@ -415,7 +467,8 @@ function render(){
   if(heroOk() && hi.getAttribute('src') !== heroSrc()) hi.src = heroSrc();
 
   const v = $('#view');
-  v.innerHTML = ui.tab==='rank' ? viewRank() : ui.tab==='tour' ? viewTour() : ui.tab==='wheel' ? viewWheel() : viewAdmin();
+  v.innerHTML = (dbError ? `<div class="warn" style="margin-bottom:12px"><b>Keine Verbindung zur Datenbank</b><div class="spacer"></div>${esc(dbError)}</div>` : '')
+    + (ui.tab==='rank' ? viewRank() : ui.tab==='tour' ? viewTour() : ui.tab==='wheel' ? viewWheel() : viewAdmin());
   [...document.querySelectorAll('#tabs button')].forEach(b => b.classList.toggle('on', b.dataset.tab===ui.tab));
 
   const hm = v.querySelector('.hero img'); if(hm) hm.onerror = heroBroke;
@@ -654,6 +707,7 @@ function viewAdmin(){
   /* ── Werkzeuge ── */
   const lastKey = keys[0];
   h += sec('tools', '🧰 Werkzeuge', '', `
+    <div class="hint" style="margin-bottom:10px">Verbindung: <b>${store.mode==='firebase'?'Firebase live':'Demo-Modus (nur dieses Gerät)'}</b>${store.url?`<br><code style="word-break:break-all">${esc(store.url)}</code>`:''}${store.mode==='local'?'<br>Mit <code>?demo=1</code> im Link erzwungen bzw. keine Firebase-Config.':''}</div>
     <button class="btn big" data-a="undo" ${lastKey?'':'disabled'}>↩︎ Letzte Änderung zurücknehmen${lastKey?`<span class="xs mu"> (${esc((L[lastKey].label||'').slice(0,26))})</span>`:''}</button>
     <div class="spacer"></div><div class="btnrow">
       <button class="btn" data-a="bcopy">📋 Backup kopieren</button>
@@ -953,6 +1007,7 @@ addEventListener('resize', () => { if(ui.tab==='wheel' && !ui.spinning) drawWhee
     return;
   }
   setConn(store.mode==='firebase' ? 'live' : 'Demo-Modus', store.mode==='firebase' ? 'live' : 'local');
+  if(store.mode==='local' && !DEMO) toast('Kein Firebase – Daten bleiben auf diesem Gerät');
   store.subscribe(snap => {
     D = (snap && snap.data) || {};
     L = (snap && snap.log)  || {};

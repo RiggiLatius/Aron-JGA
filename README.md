@@ -10,13 +10,17 @@ hat, gewinnt.** Alle anderen verfolgen den Stand über denselben Link, read-only
 
 ---
 
-## 1. Einrichten (einmalig, ~5 Minuten)
+## 1. Einrichten
 
-### Firebase-Projekt anlegen
-1. [console.firebase.google.com](https://console.firebase.google.com) → **Projekt hinzufügen**
-   (Name z. B. `aron-jga`). Google Analytics kann man abwählen.
-2. Links im Menü **Build → Realtime Database** → **Datenbank erstellen**.
-   Standort: `europe-west1` (Belgien) ist für Deutschland am schnellsten.
+Die Firebase-Config des Projekts **`aron-jga`** ist in `index.html` schon
+eingetragen. Es fehlt nur noch die Datenbank selbst und das Veröffentlichen.
+
+### Realtime Database anlegen (der einzige offene Schritt)
+1. [console.firebase.google.com](https://console.firebase.google.com) → Projekt
+   **aron-jga** → links **Build → Realtime Database** → **Datenbank erstellen**.
+2. Standort: **`europe-west1`** ist für Deutschland am schnellsten – die Region ist
+   aber egal, die App probiert `europe-west1`, `us-central1` und
+   `asia-southeast1` der Reihe nach durch und merkt sich die, die antwortet.
 3. Bei der Frage nach den Regeln: **Im Testmodus starten**.
 4. Tab **Regeln** kontrollieren – es muss offen sein:
    ```json
@@ -30,37 +34,31 @@ hat, gewinnt.** Alle anderen verfolgen den Stand über denselben Link, read-only
    → **Veröffentlichen**. (Der Testmodus läuft nach 30 Tagen ab, deshalb lieber
    direkt diese Regeln setzen. Sicherheitshinweis siehe unten.)
 
-### Config kopieren und einsetzen
-5. Zahnrad oben links → **Projekteinstellungen** → unten **Meine Apps** →
-   **Web-App hinzufügen** (Icon `</>`), Name egal, Hosting **nicht** nötig.
-6. Firebase zeigt einen Block `const firebaseConfig = { … }`. Diese Werte in
-   `index.html` ganz oben in den markierten Block eintragen:
-
-   ```js
-   const FIREBASE_CONFIG = {
-     apiKey:            "AIza…",
-     authDomain:        "aron-jga.firebaseapp.com",
-     databaseURL:       "https://aron-jga-default-rtdb.europe-west1.firebasedatabase.app",
-     projectId:         "aron-jga",
-     storageBucket:     "aron-jga.appspot.com",
-     messagingSenderId: "123456789012",
-     appId:             "1:123456789012:web:abc123"
-   };
-   ```
-
-   Wichtig ist vor allem **`databaseURL`**. Fehlt sie im Snippet, steht sie in der
-   Realtime Database oben über der Datenansicht. Solange dort noch `HIER_…` steht,
-   läuft die App im **Demo-Modus**: alles funktioniert, aber die Daten liegen nur
-   im Browser des jeweiligen Geräts und werden nicht geteilt.
+Beim ersten Öffnen legt die App die neun Bars, die Getränkeliste und die
+Einstellungen selbst an. Ist die Datenbank noch nicht erstellt oder sperren die
+Regeln, sagt die App das im Klartext auf dem Bildschirm – kein weißer Screen.
+Unter *Admin → Werkzeuge* steht, mit welcher Adresse sie gerade verbunden ist.
 
 ### Veröffentlichen
-7. `index.html` (und diese `README.md`) in ein GitHub-Repo pushen.
-8. Im Repo: **Settings → Pages → Build and deployment → Source: „Deploy from a
-   branch"**, Branch `main`, Ordner `/ (root)` → **Save**.
-9. Nach ein bis zwei Minuten liegt die App unter
-   `https://<dein-name>.github.io/<repo>/` – **diesen Link in die WhatsApp-Gruppe**.
-10. Auf dem Handy: Link öffnen → Teilen-Menü → **„Zum Home-Bildschirm"**. Dann
-    startet die App wie eine normale App ohne Browserleiste.
+5. Repo auf GitHub → **Settings → Pages → Build and deployment → Source:
+   „Deploy from a branch"**, Branch `main` (oder der Branch mit diesem Stand),
+   Ordner `/ (root)` → **Save**.
+6. Nach ein bis zwei Minuten liegt die App unter
+   `https://<dein-name>.github.io/Aron-JGA/` – **diesen Link in die
+   WhatsApp-Gruppe**.
+7. Auf dem Handy: Link öffnen → Teilen-Menü → **„Zum Home-Bildschirm"**. Dann
+   startet die App wie eine normale App ohne Browserleiste.
+
+Das Projekt hat auch eine verknüpfte Firebase-Hosting-Site (`aron-jga`). Wer
+mag, kann statt GitHub Pages `firebase deploy` benutzen – nötig ist es nicht.
+
+### Ausprobieren ohne den echten Abend anzufassen
+`?demo=1` an den Link hängen (`…/index.html?demo=1`): dann läuft alles nur im
+Browser dieses Geräts, ohne die Datenbank. Praktisch zum Rumspielen vorher.
+
+### Config ändern
+Falls das Firebase-Projekt mal wechselt: der Block `FIREBASE_CONFIG` steht ganz
+oben in `index.html`, klar markiert. `databaseURL` darf leer bleiben.
 
 ---
 
@@ -172,7 +170,8 @@ im Log).
 
 Technisch: Vanilla JS, inline CSS, Firebase-SDK per ESM-Import vom CDN,
 `onValue` für Live-Updates (kein Polling), `update()` fürs Schreiben,
-`push()` für die Log-Keys.
+`push()` für die Log-Keys. Jede Änderung geht als **ein** `update()` mit
+Multi-Path-Keys raus, das den State-Pfad und den Log-Eintrag zusammen enthält.
 
 ---
 
@@ -192,3 +191,4 @@ Die DB-Regeln sind offen (`".read": true, ".write": true`). Das heißt:
   bewusst offen lassen.
 * Nach dem Abend am besten die Realtime Database im Firebase-Projekt löschen
   oder die Regeln auf `false` setzen.
+* Der Link ist der Zugang: wer ihn hat, sieht alles. Also nur in die Gruppe.
