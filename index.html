@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d0f14">
+<title>Aron JGA – Bar Crawl</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0d0f14; --card:#171a22; --card2:#1f232e; --line:#2a2f3c;
+  --tx:#f3f4f6; --mu:#98a0ae; --ac:#ff7a29; --ac2:#ffb066;
+  --ok:#39d98a; --bad:#ff5470; --gold:#ffd15c; --silver:#cfd6e4; --bronze:#e0955b;
+}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--tx);
+  font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  padding:0 0 calc(78px + env(safe-area-inset-bottom));
+  -webkit-text-size-adjust:100%; overflow-x:hidden;
+}
+h1,h2,h3{margin:0;font-weight:700;letter-spacing:-.01em}
+a{color:var(--ac2)}
+/* ---- Header ---- */
+header{
+  position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;
+  padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
+  background:rgba(13,15,20,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+}
+header .thumb{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--ac);flex:0 0 auto;background:var(--card2)}
+header h1{font-size:19px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:5px 9px;border-radius:999px;background:var(--card2);color:var(--mu);border:1px solid var(--line)}
+.pill.live{color:var(--ok);border-color:#1e5f43}
+.pill.local{color:var(--gold);border-color:#5f4d1e}
+/* ---- Layout ---- */
+main{padding:14px 14px 24px;max-width:640px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:0 0 12px}
+.card.tight{padding:11px 12px}
+.row{display:flex;align-items:center;gap:10px}
+.row.wrap{flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+.mu{color:var(--mu)}
+.sm{font-size:13px}
+.xs{font-size:11.5px}
+.b{font-weight:700}
+.center{text-align:center}
+.sep{height:1px;background:var(--line);margin:12px -14px}
+.hint{font-size:12.5px;color:var(--mu);line-height:1.35}
+.spacer{height:8px}
+/* ---- Hero ---- */
+.hero{position:relative;border-radius:18px;overflow:hidden;margin:0 0 12px;border:1px solid var(--line);background:var(--card)}
+.hero img{display:block;width:100%;max-width:100%;height:auto;max-height:52vh;object-fit:cover;object-position:center 22%}
+.hero.noimg{height:120px;display:grid;place-items:center;font-size:46px;background:linear-gradient(135deg,#241a12,#171a22)}
+.hero .cap{position:absolute;left:0;right:0;bottom:0;padding:26px 14px 12px;background:linear-gradient(transparent,rgba(8,9,12,.88));}
+.hero .cap .t{font-size:24px;font-weight:800;text-shadow:0 2px 12px #000}
+.hero .cap .s{font-size:13px;color:#e2e5ea;text-shadow:0 2px 10px #000}
+/* ---- Buttons ---- */
+button{font:inherit;color:inherit}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:46px;padding:0 16px;border-radius:13px;border:1px solid var(--line);
+  background:var(--card2);color:var(--tx);font-weight:600;font-size:15px;cursor:pointer;
+}
+.btn:active{transform:translateY(1px)}
+.btn.pri{background:var(--ac);border-color:var(--ac);color:#1b0d02;font-weight:800}
+.btn.ok{background:#13342a;border-color:#1e5f43;color:var(--ok)}
+.btn.bad{background:#3a1420;border-color:#5f1e2c;color:var(--bad)}
+.btn.gho{background:transparent}
+.btn.big{min-height:56px;font-size:17px;width:100%}
+.btn.sq{min-width:46px;padding:0 10px}
+.btn.mini{min-height:34px;font-size:13px;padding:0 10px;border-radius:10px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.btnrow>.btn{flex:1}
+/* ---- Inputs ---- */
+input[type=text],input[type=number],input[type=password],select,textarea{
+  font:inherit;width:100%;min-height:44px;padding:9px 11px;border-radius:11px;
+  background:#0f1218;border:1px solid var(--line);color:var(--tx);
+}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--ac);outline-offset:-1px;border-color:var(--ac)}
+textarea{min-height:150px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.4}
+label.chk{display:inline-flex;align-items:center;gap:8px;min-height:44px;font-size:14px;cursor:pointer}
+label.chk input{width:24px;height:24px;min-height:0;accent-color:var(--ac)}
+.field{margin:0 0 10px}
+.field>span{display:block;font-size:12px;color:var(--mu);margin:0 0 4px;font-weight:600;letter-spacing:.02em}
+/* ---- Rank ---- */
+.rank{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--card);border:1px solid var(--line);margin:0 0 8px}
+.rank .pos{width:34px;height:34px;flex:0 0 auto;border-radius:10px;display:grid;place-items:center;font-weight:800;background:var(--card2);color:var(--mu)}
+.rank.p1{border-color:var(--gold);box-shadow:0 0 0 1px rgba(255,209,92,.25) inset}
+.rank.p1 .pos{background:var(--gold);color:#3a2b00}
+.rank.p2 .pos{background:var(--silver);color:#22262e}
+.rank.p3 .pos{background:var(--bronze);color:#2a1405}
+.rank .nm{font-size:17px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank .big{font-size:30px;font-weight:800;line-height:1;letter-spacing:-.02em}
+.rank .big small{font-size:12px;font-weight:600;color:var(--mu);display:block;letter-spacing:0}
+/* ---- Tour ---- */
+.loc{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px;margin:0 0 10px;cursor:pointer}
+.loc.active{border-color:var(--ac);background:linear-gradient(180deg,rgba(255,122,41,.10),rgba(255,122,41,0))}
+.loc.done{opacity:.92}
+.loc .n{font-size:17px;font-weight:700}
+.loc .drink{font-size:26px;font-weight:800;color:var(--ac2);line-height:1.15;margin:8px 0 2px}
+.badge{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;padding:4px 8px;border-radius:999px;background:var(--card2);color:var(--mu);border:1px solid var(--line);white-space:nowrap}
+.badge.a{color:var(--ac);border-color:#6b3a15;background:#33200e}
+.badge.d{color:var(--ok);border-color:#1e5f43;background:#13342a}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-size:12.5px;padding:5px 9px;border-radius:999px;background:var(--card2);border:1px solid var(--line)}
+.chip b{color:var(--ac2)}
+.chip.win{border-color:var(--gold);color:var(--gold)}
+/* ---- Wheel ---- */
+.wheelwrap{display:grid;place-items:center;position:relative;margin:4px 0 10px}
+canvas#wheel{max-width:100%;height:auto;touch-action:manipulation}
+.needle{position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:20px solid var(--ac);filter:drop-shadow(0 2px 4px #000)}
+.result{font-size:30px;font-weight:800;text-align:center;line-height:1.15;color:var(--ac2);margin:6px 0 10px;min-height:1.2em}
+/* ---- Admin ---- */
+details.sec{background:var(--card);border:1px solid var(--line);border-radius:16px;margin:0 0 10px;overflow:hidden}
+details.sec>summary{list-style:none;cursor:pointer;padding:15px 14px;font-weight:700;display:flex;align-items:center;gap:9px}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::after{content:"▾";margin-left:auto;color:var(--mu)}
+details.sec[open]>summary::after{content:"▴"}
+details.sec>summary .cnt{font-size:11.5px;color:var(--mu);font-weight:600}
+.secbody{padding:0 14px 14px}
+.item{background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:10px;margin:0 0 9px}
+.stepper{display:flex;align-items:center;gap:7px}
+.stepper input{width:74px;text-align:center;font-size:20px;font-weight:800;min-height:46px}
+.logline{padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.logline:last-child{border-bottom:0}
+.logline .t{color:var(--mu);font-variant-numeric:tabular-nums}
+.logline .v{font-weight:700}
+.logline .from{color:var(--bad)}
+.logline .to{color:var(--ok)}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#f3f4f6;color:#11131a;font-weight:700;font-size:14px;padding:11px 16px;border-radius:999px;z-index:60;box-shadow:0 8px 26px rgba(0,0,0,.5);max-width:92vw;text-align:center}
+.warn{background:#3a1420;border:1px solid #5f1e2c;color:#ffc2cd;border-radius:13px;padding:11px;font-size:13.5px}
+.note{background:#33200e;border:1px solid #6b3a15;color:#ffd6b5;border-radius:13px;padding:11px;font-size:13.5px}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* ---- Tabbar ---- */
+nav.tabs{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;
+  background:rgba(15,17,23,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line);
+  padding:0 0 env(safe-area-inset-bottom);
+}
+nav.tabs button{
+  flex:1;background:none;border:0;padding:9px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--mu);font-size:11px;font-weight:700;cursor:pointer;min-height:62px;justify-content:center;
+}
+nav.tabs button .ic{font-size:21px;line-height:1}
+nav.tabs button.on{color:var(--ac)}
+</style>
+</head>
+<body>
+<header>
+  <img class="thumb" id="hdrimg" alt="" hidden>
+  <h1 id="hdrname">Aron JGA</h1>
+  <span class="pill" id="conn">…</span>
+</header>
+<main id="view"><div class="card mu">Lade…</div></main>
+<nav class="tabs" id="tabs">
+  <button data-tab="rank" class="on"><span class="ic">🏆</span>Rangliste</button>
+  <button data-tab="tour"><span class="ic">📍</span>Tour</button>
+  <button data-tab="wheel"><span class="ic">🎡</span>Rad</button>
+  <button data-tab="admin"><span class="ic">⚙️</span>Admin</button>
+</nav>
+
+<script type="module">
+/* ══════════════════════════════════════════════════════════════════════
+   ██  FIREBASE-CONFIG  –  HIER EINTRAGEN (Firebase Console → Projekt-  ██
+   ██  einstellungen → "Meine Apps" → Web-App → SDK-Konfiguration)      ██
+   ══════════════════════════════════════════════════════════════════════
+   Wichtig ist vor allem "databaseURL". Solange dort "HIER_" steht,
+   läuft die App im Demo-Modus (Daten nur auf diesem Gerät).            */
+const FIREBASE_CONFIG = {
+  apiKey:            "HIER_API_KEY",
+  authDomain:        "HIER_PROJEKT.firebaseapp.com",
+  databaseURL:       "https://HIER_PROJEKT-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "HIER_PROJEKT",
+  storageBucket:     "HIER_PROJEKT.appspot.com",
+  messagingSenderId: "HIER_SENDER_ID",
+  appId:             "HIER_APP_ID"
+};
+const ROOT     = "aron-jga";   // DB-Pfade: /aron-jga/data  und  /aron-jga/log
+const LOG_MAX  = 500;          // älteste Log-Einträge rollen raus
+/* ════════════════════ ENDE CONFIG – ab hier nichts mehr eintragen ════ */
+
+const SDK = "https://www.gstatic.com/firebasejs/10.12.5/";
+const FB_OK = /^https:\/\//.test(FIREBASE_CONFIG.databaseURL) && !/HIER_/.test(FIREBASE_CONFIG.databaseURL);
+
+/* ───────────────────────── kleine Helfer ───────────────────────── */
+const $  = s => document.querySelector(s);
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = (v,d) => { const n = Number(v); return Number.isFinite(n) ? n : d; };
+const asArr = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []);
+const nid = p => p + Date.now().toString(36).slice(-5) + Math.floor(Math.random()*1296).toString(36).padStart(2,'0');
+const clone = o => JSON.parse(JSON.stringify(o===undefined?null:o));
+const getPath = (o,p) => p.split('/').reduce((a,k)=> (a==null?undefined:a[k]), o);
+const clean = v => v===undefined ? null : v;
+const isImg = v => typeof v==='string' && (v.startsWith('data:image') || /\.(jpe?g|png|webp|gif|heic)(\?|$)/i.test(v));
+function setPath(root,path,val){
+  const ks = path.split('/'); let o = root;
+  for(let i=0;i<ks.length-1;i++){
+    const k = ks[i];
+    if(o[k]==null || typeof o[k]!=='object') o[k] = /^\d+$/.test(ks[i+1]) ? [] : {};
+    o = o[k];
+  }
+  const last = ks[ks.length-1];
+  if(val===null || val===undefined) { if(Array.isArray(o)) o[last]=null; else delete o[last]; }
+  else o[last] = val;
+}
+let toastT;
+function toast(msg){
+  const old = $('.toast'); if(old) old.remove();
+  const d = document.createElement('div'); d.className='toast'; d.textContent = msg;
+  document.body.appendChild(d); clearTimeout(toastT); toastT = setTimeout(()=>d.remove(), 2600);
+}
+const hhmm = ts => { const d = new Date(ts||0); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
+const dmy  = ts => { const d = new Date(ts||0); return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'; };
+
+/* ───────────────────────── Datenspeicher ───────────────────────── */
+/* Einheitliche Schnittstelle: subscribe(cb), update(multiPathObj), newLogKey()
+   Pfad-Keys sind relativ zu /aron-jga  ->  "data/..." und "log/..."        */
+let store = null, LOCAL_KEY = 'aron-jga-local';
+
+async function initStore(){
+  if(FB_OK){
+    const [{ initializeApp }, dbm] = await Promise.all([ import(SDK+'firebase-app.js'), import(SDK+'firebase-database.js') ]);
+    const { getDatabase, ref, onValue, update, push } = dbm;
+    const db = getDatabase(initializeApp(FIREBASE_CONFIG));
+    const rootRef = ref(db, ROOT);
+    store = {
+      mode:'firebase',
+      newLogKey: () => push(ref(db, ROOT+'/log')).key,
+      update: o => update(rootRef, o),
+      subscribe: cb => onValue(rootRef, s => cb(s.val()||{}), err => { setConn('Fehler','bad'); toast('DB-Fehler: '+err.message); })
+    };
+  } else {
+    let n = 0, subs = [];
+    const read  = () => { try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || {}; } catch(e){ return {}; } };
+    const write = o => { localStorage.setItem(LOCAL_KEY, JSON.stringify(o)); subs.forEach(cb => cb(clone(o))); };
+    store = {
+      mode:'local',
+      newLogKey: () => '-L' + Date.now().toString(36) + (n++).toString(36).padStart(3,'0'),
+      update: o => { const r = read(); for(const [p,v] of Object.entries(o)) setPath(r,p,v); write(r); return Promise.resolve(); },
+      subscribe: cb => { subs.push(cb); cb(read()); addEventListener('storage', e => { if(e.key===LOCAL_KEY) cb(read()); }); }
+    };
+  }
+}
+function setConn(txt, kind){ const el=$('#conn'); el.textContent=txt; el.className='pill '+(kind||''); }
+
+/* ─────────────────── Schreiben: State + Log immer zusammen ─────────────────── */
+let D = {}, L = {};   // D = /aron-jga/data , L = /aron-jga/log
+
+/* changes: { "relativer/pfad/in/data": neuerWert }  – null loescht
+   meta:    { type, label }                                                     */
+async function tx(changes, meta){
+  const upd = {}, rec = [];
+  for(const [p,v] of Object.entries(changes)){
+    upd['data/'+p] = clean(v);
+    rec.push({ path:p, from: clean(clone(getPath(D,p))), to: clean(clone(v)) });
+  }
+  const e = { ts: Date.now(), type: (meta&&meta.type) || 'edit', label: (meta&&meta.label) || 'Änderung', changes: rec };
+  if(rec.length===1){ e.path = rec[0].path; e.from = rec[0].from; e.to = rec[0].to; }
+  upd['log/'+store.newLogKey()] = e;
+  const keys = Object.keys(L||{}).sort();
+  const over = keys.length + 1 - LOG_MAX;
+  for(let i=0;i<over;i++) upd['log/'+keys[i]] = null;     // aelteste rollen raus
+  try { await store.update(upd); }
+  catch(err){ toast('Speichern fehlgeschlagen: '+err.message); throw err; }
+}
+/* Einen Log-Eintrag zurueckdrehen */
+async function revert(key, kind){
+  const e = (L||{})[key]; if(!e) return;
+  const ch = {};
+  for(const c of asArr(e.changes)) ch[c.path] = c.from===undefined ? null : c.from;
+  if(!Object.keys(ch).length){ toast('Nichts zurückzusetzen'); return; }
+  await tx(ch, { type: kind||'revert', label: (kind==='undo'?'Undo: ':'Zurückgesetzt: ') + (e.label||'Änderung') });
+  toast(kind==='undo' ? 'Letzte Änderung zurückgenommen' : 'Auf alten Wert zurückgesetzt');
+}
+
+/* ───────────────────────── Startdaten ───────────────────────── */
+const SEED_LOCATIONS = [
+  ['küblerGo 24/7',                   'Rotebühlstraße 69, 70178 Stuttgart'],
+  ['',                                ''],                                   /* 2. Asiate – Name/Adresse noch offen */
+  ['Mos Eisley',                      'Fritz-Elsas-Straße, Stuttgart'],
+  ['Paulaner am alten Postplatz',     'Calwer Str. 4, Stuttgart'],
+  ["WELLER'S Dinkelacker Stehausschank", 'Stuttgart'],
+  ['Marshall Matt',                   'Eberhardstraße 6 A, 70173 Stuttgart'],
+  ['Oblomow',                         'Torstraße 20, 70173 Stuttgart'],
+  ['Suessholz',                       'Wilhelmspl. 3, 70182 Stuttgart'],
+  ['La Concha',                       'Wilhelmspl. 5, 70182 Stuttgart']
+];
+const SEED_DRINKS = ['Bier 0,3','Weizen','Radler','Aperol Spritz','Gin Tonic','Wodka-Lemon','Whiskey-Cola','Jägermeister Shot','Tequila','Wein','Cocktail nach Wahl des Wirts','Alkoholfrei'];
+
+function seedPayload(){
+  const locations = {};
+  SEED_LOCATIONS.forEach((l,i) => {
+    locations['l'+(i+1)] = { name:l[0], address:l[1], order:i+1, status:'pending', drink:null, rejected:[], deleted:false };
+  });
+  return {
+    settings:     { eventName:'Aron JGA', password:'aron2026', skipMalus:3, noRepeatDrinks:false, heroImage:'' },
+    participants: {},
+    locations,
+    results:      {},
+    drinks:       SEED_DRINKS.map(n => ({ name:n, deleted:false }))
+  };
+}
+let seeded = false;
+async function seedIfEmpty(){
+  if(seeded || (D && D.settings)) return;
+  seeded = true;
+  const p = seedPayload();
+  await tx({ settings:p.settings, participants:p.participants, locations:p.locations, results:p.results, drinks:p.drinks },
+           { type:'seed', label:'Startdaten angelegt' });
+}
+
+/* ───────────────────────── Abgeleitete Daten ───────────────────────── */
+const S = () => D.settings || {};
+const partsAll = () => Object.entries(D.participants||{}).filter(([,p])=>p&&typeof p==='object').map(([id,p])=>({id,...p}));
+const parts    = () => partsAll().filter(p=>!p.deleted).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'de'));
+const locsAll  = () => Object.entries(D.locations||{}).filter(([,l])=>l&&typeof l==='object').map(([id,l])=>({id,...l}))
+                       .sort((a,b)=> num(a.order,999)-num(b.order,999) || a.id.localeCompare(b.id));
+const locs     = () => locsAll().filter(l=>!l.deleted);
+/* Getränke liegen als Array – die DB kann daraus aber ein Objekt mit
+   Zahlen-Keys machen. Deshalb immer mit den echten Keys arbeiten.      */
+const drinksAll= () => (Array.isArray(D.drinks) ? D.drinks.map((d,i)=>[String(i),d]) : Object.entries(D.drinks||{}))
+                       .filter(([,d]) => d && typeof d==='object')
+                       .map(([k,d]) => ({ i:k, name:d.name||'', deleted:!!d.deleted }))
+                       .sort((a,b) => num(a.i,0)-num(b.i,0));
+const nextDrinkIx = () => Math.max(-1, ...drinksAll().map(d=>num(d.i,-1))) + 1;
+const drinks   = () => drinksAll().filter(d=>d.name && !d.deleted);
+const rkey     = (lid,pid) => lid+'_'+pid;
+const rawRes   = (lid,pid) => (D.results||{})[rkey(lid,pid)];
+const skipMalus= () => num(S().skipMalus, 3);
+
+/* Schlücke einer Bar: {pid: {sips, skipped}} – "ausgesetzt" = Ø der Bar + skipMalus */
+function barSips(lid){
+  const out = {}, plain = [];
+  parts().forEach(p => {
+    const r = rawRes(lid,p.id);
+    if(!r || typeof r!=='object' || r.deleted) return;
+    if(r.skipped){ out[p.id] = { skipped:true, sips:0 }; }
+    else if(Number.isFinite(Number(r.sips))){ const v = Number(r.sips); out[p.id] = { skipped:false, sips:v }; plain.push(v); }
+  });
+  const avg = plain.length ? plain.reduce((a,b)=>a+b,0)/plain.length : 0;
+  Object.values(out).forEach(v => { if(v.skipped) v.sips = Math.round(avg) + skipMalus(); });
+  out._avg = avg; out._n = plain.length;
+  return out;
+}
+function ranking(){
+  const rows = parts().map(p => ({ ...p, total:0, n:0 }));
+  const byId = Object.fromEntries(rows.map(r=>[r.id,r]));
+  locs().forEach(l => {
+    const b = barSips(l.id);
+    Object.entries(b).forEach(([pid,v]) => { if(pid.startsWith('_')) return; if(byId[pid]){ byId[pid].total += v.sips; byId[pid].n++; } });
+  });
+  rows.forEach(r => r.avg = r.n ? r.total/r.n : 0);
+  rows.sort((a,b) => a.total-b.total || a.avg-b.avg || String(a.name||'').localeCompare(String(b.name||''),'de'));
+  return rows;
+}
+function barWinner(lid){
+  const b = barSips(lid), names = Object.fromEntries(parts().map(p=>[p.id,p.name]));
+  let best = null;
+  Object.entries(b).forEach(([pid,v]) => { if(pid.startsWith('_')) return; if(!best || v.sips < best.sips) best = { pid, sips:v.sips, name:names[pid] }; });
+  return best;
+}
+function activeLoc(){ const ls = locs(); return ls.find(l=>l.status==='active') || ls.find(l=>l.status!=='done') || ls[0] || null; }
+function usedDrinks(exceptLid){ return locs().filter(l=>l.id!==exceptLid && l.drink).map(l=>l.drink); }
+function availableDrinks(lid){
+  const loc = (D.locations||{})[lid] || {};
+  const rej = asArr(loc.rejected).map(String);
+  const used = S().noRepeatDrinks ? usedDrinks(lid) : [];
+  return drinks().filter(d => !rej.includes(d.name) && !used.includes(d.name));
+}
+let heroFail = null;                                  /* Bild-URL, die nicht geladen werden konnte */
+const heroSrc = () => (S().heroImage || 'assets/aron.jpg');
+const heroOk  = () => !!heroSrc() && heroFail !== heroSrc();
+function heroBroke(){ if(heroFail === heroSrc()) return; heroFail = heroSrc(); render(); }
+
+/* ───────────────────────── UI-Zustand ───────────────────────── */
+const ui = { tab:'rank', sipsBar:null, wheelLoc:null, spinning:false, angle:0, result:null, open:{}, pwWrong:false, logMax:60 };
+let admin = false;
+const ADMIN_KEY = 'aron-jga-admin';
+function checkAdmin(){ const pw = localStorage.getItem(ADMIN_KEY); admin = !!pw && pw === String(S().password ?? 'aron2026'); return admin; }
+function needAdmin(){ if(admin) return true; toast('Nur im Admin-Modus'); go('admin'); return false; }
+
+const STAT = { pending:['offen',''], active:['aktiv','a'], done:['abgeschlossen','d'] };
+const maps = a => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(a);
+const fmtVal = v => {
+  if(v===null || v===undefined) return '—';
+  if(typeof v==='boolean') return v ? 'ja' : 'nein';
+  if(isImg(v)) return '[Bild]';
+  if(typeof v==='object') return Array.isArray(v) ? '[Liste, '+v.length+']' : '{Objekt}';
+  const s = String(v); return s==='' ? '(leer)' : (s.length>44 ? s.slice(0,40)+'…' : s);
+};
+
+/* ───────────────────────── Rendern ───────────────────────── */
+function render(){
+  if(ui.spinning) return;
+  const act = document.activeElement, fk = act && act.dataset ? act.dataset.k : null;
+  const sel = fk && act.setSelectionRange && act.type!=='number' ? [act.selectionStart, act.selectionEnd] : null;
+  const scroll = window.scrollY;
+
+  $('#hdrname').textContent = S().eventName || 'Aron JGA';
+  document.title = (S().eventName || 'Aron JGA') + ' – Bar Crawl';
+  const hi = $('#hdrimg');
+  hi.hidden = !heroOk();
+  hi.onerror = heroBroke;
+  if(heroOk() && hi.getAttribute('src') !== heroSrc()) hi.src = heroSrc();
+
+  const v = $('#view');
+  v.innerHTML = ui.tab==='rank' ? viewRank() : ui.tab==='tour' ? viewTour() : ui.tab==='wheel' ? viewWheel() : viewAdmin();
+  [...document.querySelectorAll('#tabs button')].forEach(b => b.classList.toggle('on', b.dataset.tab===ui.tab));
+
+  const hm = v.querySelector('.hero img'); if(hm) hm.onerror = heroBroke;
+  if(ui.tab==='wheel') drawWheel();
+  if(fk){
+    const el = document.querySelector('[data-k="'+CSS.escape(fk)+'"]');
+    if(el){ el.focus({preventScroll:true}); if(sel && el.setSelectionRange){ try{ el.setSelectionRange(sel[0],sel[1]); }catch(e){} } window.scrollTo(0,scroll); }
+  }
+}
+function go(tab){ ui.tab = tab; render(); window.scrollTo(0,0); }
+
+/* ── Hero ── */
+function heroBlock(){
+  const cap = `<div class="cap"><div class="t">${esc(S().eventName||'Aron JGA')}</div>
+    <div class="s">Bar-Tour Stuttgart · wenige Schlücke = gut</div></div>`;
+  if(!heroOk()) return `<div class="hero noimg">🍻${cap}</div>`;
+  return `<div class="hero"><img src="${esc(heroSrc())}" alt="Aron">${cap}</div>`;
+}
+
+/* ══ Rangliste ══ */
+function viewRank(){
+  const rows = ranking();
+  let h = heroBlock();
+  h += `<div class="note" style="margin-bottom:12px">🏆 <b>Wenige Schlücke = gut.</b> Wer am Ende die wenigsten Schlücke gebraucht hat, gewinnt.</div>`;
+  if(!rows.length){
+    h += `<div class="card center mu">Noch keine Teilnehmer.<div class="spacer"></div><button class="btn pri" data-a="tab" data-t="admin">Teilnehmer anlegen</button></div>`;
+  } else {
+    h += rows.map((r,i) => `<div class="rank p${i+1}">
+        <div class="pos">${i+1}</div>
+        <div class="grow"><div class="nm">${esc(r.name||'(ohne Name)')}</div>
+          <div class="sm mu">${r.n} Getränk${r.n===1?'':'e'} · Ø ${r.n? r.avg.toFixed(1):'–'}</div></div>
+        <div class="big center">${r.total}<small>Schlücke</small></div>
+      </div>`).join('');
+  }
+  const done = locs().filter(l => l.status==='done');
+  h += `<div class="card"><h3>Bar-Sieger</h3><div class="hint">Wenigste Schlücke pro abgeschlossener Bar.</div><div class="sep"></div>`;
+  h += done.length ? done.map(l => { const w = barWinner(l.id);
+      return `<div class="row" style="padding:7px 0"><div class="grow"><div class="b">${esc(l.name||'(ohne Name)')}</div>
+      <div class="xs mu">${esc(l.drink||'kein Getränk')}</div></div>
+      <div class="${w?'chip win':'chip'}">${w? esc(w.name||'?')+' · '+w.sips : 'keine Werte'}</div></div>`; }).join('')
+    : `<div class="mu sm">Noch keine Bar abgeschlossen.</div>`;
+  h += `</div>`;
+  const del = partsAll().filter(p=>p.deleted);
+  if(del.length) h += `<div class="card tight xs mu">${del.length} Teilnehmer im Papierkorb (zählen nicht mit).</div>`;
+  return h;
+}
+
+/* ══ Tour ══ */
+function viewTour(){
+  const ls = locs();
+  if(!ls.length) return `<div class="card center mu">Keine Bars.<div class="spacer"></div><button class="btn pri" data-a="tab" data-t="admin">Bars anlegen</button></div>`;
+  const names = Object.fromEntries(parts().map(p=>[p.id,p.name]));
+  return ls.map(l => {
+    const st = STAT[l.status] || STAT.pending;
+    const b = barSips(l.id), w = barWinner(l.id);
+    const chips = Object.entries(b).filter(([pid])=>!pid.startsWith('_'))
+      .sort((a,c)=>a[1].sips-c[1].sips)
+      .map(([pid,val]) => `<span class="chip ${w&&w.pid===pid?'win':''}">${esc(names[pid]||'?')} <b>${val.sips}</b>${val.skipped?' <span class="xs">(ausgesetzt)</span>':''}</span>`).join('');
+    return `<button class="loc ${l.status==='active'?'active':''} ${l.status==='done'?'done':''}" data-a="editbar" data-l="${l.id}">
+      <div class="row"><div class="grow"><div class="n">${num(l.order,0)}. ${esc(l.name||'(Name noch offen)')}</div>
+        ${l.address ? `<div class="sm mu">${esc(l.address)}</div>` : `<div class="sm mu">Adresse noch offen</div>`}</div>
+        <span class="badge ${st[1]}">${st[0]}</span></div>
+      ${l.drink ? `<div class="drink">🍹 ${esc(l.drink)}</div>` : (l.status==='active' ? `<div class="drink mu" style="font-size:18px">Noch nicht gedreht</div>` : '')}
+      ${chips ? `<div class="chips">${chips}</div>` : ''}
+      <div class="row wrap" style="margin-top:10px;gap:8px">
+        ${l.address ? `<span class="btn mini" data-a="maps" data-adr="${esc(l.address)}">🗺️ Karte</span>` : ''}
+        ${l.status==='active' && !l.drink ? `<span class="btn mini pri" data-a="tab" data-t="wheel">🎡 Rad drehen</span>` : ''}
+        <span class="btn mini gho">✏️ Nachbearbeiten</span>
+      </div></button>`;
+  }).join('');
+}
+
+/* ══ Rad ══ */
+function viewWheel(){
+  const ls = locs();
+  if(!ls.length) return `<div class="card center mu">Keine Bars angelegt.</div>`;
+  const lid = ui.wheelLoc && ls.some(l=>l.id===ui.wheelLoc) ? ui.wheelLoc : (activeLoc()||ls[0]).id;
+  ui.wheelLoc = lid;
+  const loc = ls.find(l=>l.id===lid) || {};
+  const av = availableDrinks(lid), rej = asArr(loc.rejected);
+  let h = `<div class="card tight"><div class="field" style="margin:0"><span>Bar für diesen Dreh</span>
+      <select data-a="wloc" data-k="wloc">${ls.map(l=>`<option value="${l.id}" ${l.id===lid?'selected':''}>${num(l.order,0)}. ${esc(l.name||'(ohne Name)')} — ${(STAT[l.status]||STAT.pending)[0]}</option>`).join('')}</select>
+    </div></div>`;
+  if(loc.drink) h += `<div class="note" style="margin-bottom:12px">Aktuell eingetragen: <b>${esc(loc.drink)}</b>${admin?' – neu drehen oder unten manuell ändern.':''}</div>`;
+  h += `<div class="wheelwrap"><div class="needle"></div><canvas id="wheel" width="340" height="340"></canvas></div>`;
+  h += `<div class="result">${ui.result ? '🍹 '+esc(ui.result) : (av.length? '' : 'Keine Getränke übrig')}</div>`;
+  if(!av.length){
+    h += `<div class="warn">Für diese Bar sind alle Getränke ausgeschlossen (abgelehnt oder schon getrunken). Im Admin-Tab freigeben oder Getränke ergänzen.</div>`;
+  } else {
+    h += `<button class="btn pri big" data-a="spin">🎡 Drehen (${av.length} Getränke)</button>`;
+  }
+  if(ui.result){
+    h += `<div class="spacer"></div><div class="btnrow">
+      <button class="btn ok" data-a="accept">✅ Passt</button>
+      <button class="btn bad" data-a="reject">🚫 Gibt's hier nicht</button></div>`;
+  }
+  h += `<div class="spacer"></div><div class="card"><div class="field" style="margin:0"><span>Getränk manuell wählen (Fallback)</span>
+      <select data-a="manual" data-k="manual"><option value="">– auswählen –</option>
+      ${drinks().map(d=>`<option value="${esc(d.name)}">${esc(d.name)}</option>`).join('')}</select></div>
+      <div class="hint" style="margin-top:8px">Setzt das Getränk direkt für <b>${esc(loc.name||'diese Bar')}</b> – ohne Rad.</div></div>`;
+  if(rej.length) h += `<div class="card tight"><div class="sm b">Für diese Bar ausgeschlossen</div>
+      <div class="chips">${rej.map((r,i)=>`<span class="chip">${esc(r)} <span class="btn mini" data-a="rejfree" data-l="${lid}" data-i="${i}" style="min-height:22px;padding:0 6px;margin-left:4px">freigeben</span></span>`).join('')}</div></div>`;
+  if(!admin) h += `<div class="card tight xs mu">Nur der Admin kann Getränke bestätigen. Drehen darf jeder.</div>`;
+  return h;
+}
+
+/* ══ Admin ══ */
+function viewAdmin(){
+  if(!checkAdmin()){
+    return `<div class="card"><h2>Admin</h2>
+      <div class="hint" style="margin:6px 0 12px">Passwort eingeben. Wird auf diesem Gerät gemerkt.</div>
+      ${ui.pwWrong?`<div class="warn" style="margin-bottom:10px">Passwort falsch.</div>`:''}
+      <div class="field"><span>Passwort</span><input type="password" data-a="pw" data-k="pw" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="btn pri big" data-a="login">Einloggen</button>
+      <div class="hint" style="margin-top:10px">Standard: <code>aron2026</code> – im Admin-Tab änderbar.</div></div>`;
+  }
+  const ps = parts(), ls = locsAll(), lsv = locs();
+  const lid = ui.sipsBar && lsv.some(l=>l.id===ui.sipsBar) ? ui.sipsBar : (lsv[0]||{}).id;
+  ui.sipsBar = lid;
+  let h = `<div class="row" style="margin-bottom:10px"><div class="grow b">Admin-Modus aktiv</div>
+    <button class="btn mini" data-a="logout">Abmelden</button></div>`;
+  if(store.mode==='local') h += `<div class="warn" style="margin-bottom:12px"><b>Demo-Modus:</b> Firebase-Config fehlt, Daten liegen nur auf diesem Gerät. Config oben in <code>index.html</code> eintragen.</div>`;
+
+  /* ── Teilnehmer ── */
+  h += sec('parts', '👥 Teilnehmer', ps.length+' aktiv', `
+    <div class="row" style="margin-bottom:10px"><input type="text" data-k="newpart" id="newpart" placeholder="Name" autocomplete="off">
+      <button class="btn pri sq" data-a="padd">＋</button></div>
+    ${ps.map(p=>`<div class="item"><div class="row">
+        <input type="text" class="grow" value="${esc(p.name||'')}" data-a="pname" data-p="${p.id}" data-k="pn_${p.id}">
+        <button class="btn sq bad" data-a="pdel" data-p="${p.id}" title="löschen">🗑</button></div></div>`).join('') || '<div class="mu sm">Noch keine Teilnehmer.</div>'}
+    <div class="hint">Später Dazugekommene: frühere Bars bleiben leer und zählen nicht mit. Löschen = Papierkorb, Schluck-Werte bleiben erhalten.</div>`);
+
+  /* ── Bars ── */
+  h += sec('locs', '📍 Bars', lsv.length+' aktiv', `
+    <div class="row" style="margin-bottom:10px"><input type="text" data-k="newloc" id="newloc" placeholder="Name der Bar" autocomplete="off">
+      <button class="btn pri sq" data-a="ladd">＋</button></div>
+    ${lsv.map((l,i)=>`<div class="item">
+      <div class="row" style="margin-bottom:7px">
+        <span class="badge">${num(l.order,0)}</span>
+        <input type="text" class="grow" value="${esc(l.name||'')}" placeholder="Name" data-a="lname" data-l="${l.id}" data-k="ln_${l.id}">
+        <button class="btn sq" data-a="lup" data-l="${l.id}" ${i===0?'disabled':''}>↑</button>
+        <button class="btn sq" data-a="ldown" data-l="${l.id}" ${i===lsv.length-1?'disabled':''}>↓</button>
+      </div>
+      <input type="text" value="${esc(l.address||'')}" placeholder="Adresse" data-a="laddr" data-l="${l.id}" data-k="la_${l.id}">
+      <div class="btnrow" style="margin-top:8px">
+        ${['pending','active','done'].map(s=>`<button class="btn mini ${l.status===s?'pri':''}" data-a="lstat" data-l="${l.id}" data-s="${s}">${STAT[s][0]}</button>`).join('')}
+      </div>
+      <div class="row" style="margin-top:8px">
+        <div class="grow sm">${l.drink?`Getränk: <b>${esc(l.drink)}</b>`:'<span class="mu">kein Getränk</span>'}</div>
+        ${l.drink?`<button class="btn mini bad" data-a="ldrinkclr" data-l="${l.id}">verwerfen</button>`:''}
+      </div>
+      <div class="field" style="margin:8px 0 0"><select data-a="ldrink" data-l="${l.id}" data-k="ld_${l.id}">
+        <option value="">Getränk manuell setzen…</option>
+        ${drinks().map(d=>`<option value="${esc(d.name)}" ${l.drink===d.name?'selected':''}>${esc(d.name)}</option>`).join('')}</select></div>
+      ${asArr(l.rejected).length?`<div class="chips">${asArr(l.rejected).map((r,ri)=>`<span class="chip">🚫 ${esc(r)} <span class="btn mini" data-a="rejfree" data-l="${l.id}" data-i="${ri}" style="min-height:22px;padding:0 6px">frei</span></span>`).join('')}
+        <span class="btn mini" data-a="rejclr" data-l="${l.id}">alle frei</span></div>`:''}
+      <div class="row" style="margin-top:9px"><div class="grow"></div><button class="btn mini bad" data-a="ldel" data-l="${l.id}">🗑 Bar löschen</button></div>
+    </div>`).join('') || '<div class="mu sm">Keine Bars.</div>'}`);
+
+  /* ── Schlücke ── */
+  const b = lid ? barSips(lid) : {};
+  const loc = lsv.find(x=>x.id===lid) || {};
+  h += sec('sips', '🥤 Schlücke eintragen', loc.name?esc(loc.name):'', `
+    <div class="field"><span>Bar auswählen (jede, nicht nur die aktive)</span>
+      <select data-a="sbar" data-k="sbar">${lsv.map(l=>`<option value="${l.id}" ${l.id===lid?'selected':''}>${num(l.order,0)}. ${esc(l.name||'(ohne Name)')} — ${(STAT[l.status]||STAT.pending)[0]}${l.drink?' · '+esc(l.drink):''}</option>`).join('')}</select></div>
+    ${lid?`
+    <div class="hint" style="margin-bottom:10px">„ausgesetzt" = Ø dieser Bar (${(b._avg||0).toFixed(1)}) + Malus (${skipMalus()}) = <b>${Math.round(b._avg||0)+skipMalus()}</b> Schlücke. Minimum sonst 1.</div>
+    ${ps.map(p=>{ const r = rawRes(lid,p.id), has = r && !r.deleted, sk = has && !!r.skipped, val = has && !sk && Number.isFinite(Number(r.sips)) ? Number(r.sips) : '';
+      const eff = (b[p.id]||{}).sips;
+      return `<div class="item">
+        <div class="row"><div class="grow b">${esc(p.name||'(ohne Name)')}</div>
+          <label class="chk"><input type="checkbox" data-a="ssk" data-l="${lid}" data-p="${p.id}" data-k="sk_${lid}_${p.id}" ${sk?'checked':''}> ausgesetzt</label></div>
+        <div class="row" style="margin-top:6px">
+          <button class="btn sq" data-a="sm" data-l="${lid}" data-p="${p.id}" ${sk?'disabled':''}>−</button>
+          <div class="stepper"><input type="number" inputmode="numeric" min="1" step="1" value="${sk?eff:val}" ${sk?'disabled':''} placeholder="–" data-a="sv" data-l="${lid}" data-p="${p.id}" data-k="sv_${lid}_${p.id}"></div>
+          <button class="btn sq pri" data-a="sp" data-l="${lid}" data-p="${p.id}" ${sk?'disabled':''}>＋</button>
+          <div class="grow"></div>
+          ${has?`<button class="btn mini bad" data-a="sdel" data-l="${lid}" data-p="${p.id}">Wert löschen</button>`:'<span class="xs mu">kein Wert</span>'}
+        </div></div>`; }).join('') || '<div class="mu sm">Keine Teilnehmer.</div>'}`:'<div class="mu sm">Keine Bars.</div>'}`);
+
+  /* ── Einstellungen ── */
+  const ds = drinksAll();
+  h += sec('set', '🛠 Einstellungen & Getränke', '', `
+    <div class="field"><span>Event-Name</span><input type="text" value="${esc(S().eventName||'')}" data-a="setname" data-k="setname"></div>
+    <div class="field"><span>Admin-Passwort</span><input type="text" value="${esc(S().password??'')}" data-a="setpw" data-k="setpw" autocomplete="off"></div>
+    <div class="field"><span>Malus für „ausgesetzt" (Aufschlag auf den Bar-Ø)</span><input type="number" inputmode="numeric" value="${skipMalus()}" data-a="setmalus" data-k="setmalus"></div>
+    <label class="chk"><input type="checkbox" data-a="setnorep" data-k="setnorep" ${S().noRepeatDrinks?'checked':''}> Getränke bar-übergreifend nicht wiederholen</label>
+    <div class="sep"></div>
+    <div class="field"><span>Bild (Aron)</span>
+      <input type="text" value="${isImg(S().heroImage)&&String(S().heroImage).startsWith('data:')?'':esc(S().heroImage||'')}" placeholder="Bild-URL oder leer für assets/aron.jpg" data-a="setimg" data-k="setimg">
+      <div class="btnrow" style="margin-top:8px">
+        <label class="btn mini">📷 Foto hochladen<input type="file" accept="image/*" data-a="imgfile" style="display:none"></label>
+        ${S().heroImage?`<button class="btn mini bad" data-a="imgclr">Bild entfernen</button>`:''}
+      </div>
+      <div class="hint" style="margin-top:6px">Upload wird verkleinert und in der DB gespeichert – erscheint auf allen Geräten. ${String(S().heroImage||'').startsWith('data:')?'<b>Aktuell: hochgeladenes Foto.</b>':''}</div>
+    </div>
+    <div class="sep"></div>
+    <div class="b" style="margin-bottom:8px">Getränke (${drinks().length})</div>
+    <div class="row" style="margin-bottom:10px"><input type="text" data-k="newdrink" id="newdrink" placeholder="Neues Getränk" autocomplete="off">
+      <button class="btn pri sq" data-a="dadd">＋</button></div>
+    ${ds.filter(d=>!d.deleted).map(d=>`<div class="row" style="margin-bottom:7px">
+        <input type="text" class="grow" value="${esc(d.name)}" data-a="dname" data-i="${d.i}" data-k="dn_${d.i}">
+        <button class="btn sq bad" data-a="ddel" data-i="${d.i}">🗑</button></div>`).join('')}`);
+
+  /* ── Verlauf ── */
+  const keys = Object.keys(L||{}).sort().reverse();
+  h += sec('log', '🕘 Verlauf', keys.length===1?'1 Eintrag':keys.length+' Einträge', `
+    <div class="hint" style="margin-bottom:8px">Jede Änderung mit altem und neuem Wert. Neueste oben. Bleibt auch nach „Alles zurücksetzen" erhalten.</div>
+    ${keys.slice(0,ui.logMax).map(k=>{ const e = L[k]; const single = asArr(e.changes).length<=1;
+      return `<div class="logline"><div class="row"><div class="grow">
+        <span class="t">${dmy(e.ts)} ${hhmm(e.ts)}</span> – ${esc(e.label||e.type||'Änderung')}
+        ${single?`: <span class="v from">${esc(fmtVal(e.from))}</span> → <span class="v to">${esc(fmtVal(e.to))}</span>`
+                :`<span class="xs mu"> (${asArr(e.changes).length} Felder)</span>`}
+        </div><button class="btn mini" data-a="logrev" data-key="${esc(k)}">↩︎</button></div>
+        ${single?'':`<div class="xs mu">${asArr(e.changes).slice(0,6).map(c=>esc(c.path)+': '+esc(fmtVal(c.from))+' → '+esc(fmtVal(c.to))).join('<br>')}</div>`}
+      </div>`; }).join('') || '<div class="mu sm">Noch keine Einträge.</div>'}
+    ${keys.length>ui.logMax?`<button class="btn mini" data-a="logmore" style="margin-top:10px">Weitere anzeigen</button>`:''}`);
+
+  /* ── Papierkorb ── */
+  const trash = [];
+  partsAll().filter(p=>p.deleted).forEach(p => trash.push({ label:'Teilnehmer: '+(p.name||'(ohne Name)'), info:'Schluck-Werte bleiben gespeichert', ts:p.deletedAt, paths:{ ['participants/'+p.id+'/deleted']:false, ['participants/'+p.id+'/deletedAt']:null } }));
+  locsAll().filter(l=>l.deleted).forEach(l => trash.push({ label:'Bar: '+(l.name||'(ohne Name)'), info:(l.address||'')+(l.drink?' · '+l.drink:''), ts:l.deletedAt, paths:{ ['locations/'+l.id+'/deleted']:false, ['locations/'+l.id+'/deletedAt']:null } }));
+  drinksAll().filter(d=>d.deleted).forEach(d => trash.push({ label:'Getränk: '+(d.name||'?'), info:'', ts:null, paths:{ ['drinks/'+d.i+'/deleted']:false } }));
+  const pn = Object.fromEntries(partsAll().map(p=>[p.id,p.name])), ln = Object.fromEntries(locsAll().map(l=>[l.id,l.name]));
+  Object.entries(D.results||{}).filter(([,r])=>r&&r.deleted).forEach(([k,r]) => { const [li,pi] = k.split('_');
+    trash.push({ label:'Schlücke '+(pn[pi]||pi)+' @ '+(ln[li]||li), info:'Wert damals: '+(r.skipped?'ausgesetzt':num(r.sips,'–')), ts:r.deletedAt, paths:{ ['results/'+k+'/deleted']:false, ['results/'+k+'/deletedAt']:null } }); });
+  h += sec('trash', '🗑 Papierkorb', trash.length===1?'1 Eintrag':trash.length+' Einträge', trash.length ? trash.map((t,i)=>`
+      <div class="item"><div class="row"><div class="grow"><div class="b sm">${esc(t.label)}</div>
+        <div class="xs mu">${esc(t.info)}${t.ts?' · gelöscht '+dmy(t.ts)+' '+hhmm(t.ts):''}</div></div>
+        <button class="btn mini ok" data-a="restore" data-i="${i}">Wiederherstellen</button></div></div>`).join('')
+    : '<div class="mu sm">Papierkorb ist leer. Gelöschtes landet hier und bleibt in der DB.</div>');
+  ui._trash = trash;
+
+  /* ── Werkzeuge ── */
+  const lastKey = keys[0];
+  h += sec('tools', '🧰 Werkzeuge', '', `
+    <button class="btn big" data-a="undo" ${lastKey?'':'disabled'}>↩︎ Letzte Änderung zurücknehmen${lastKey?`<span class="xs mu"> (${esc((L[lastKey].label||'').slice(0,26))})</span>`:''}</button>
+    <div class="spacer"></div><div class="btnrow">
+      <button class="btn" data-a="bcopy">📋 Backup kopieren</button>
+      <button class="btn" data-a="bpaste">📥 Backup einfügen</button></div>
+    <div class="sep"></div>
+    <div class="b">Roh-JSON-Editor (Notausgang)</div>
+    <div class="hint" style="margin:4px 0 8px">Kompletter State unter <code>/${ROOT}/data</code>. Wird beim Speichern geprüft und komplett protokolliert.</div>
+    <textarea data-a="jinput" data-k="json" spellcheck="false">${esc(ui.jsonDraft!=null?ui.jsonDraft:JSON.stringify(D,null,2))}</textarea>
+    <div class="btnrow" style="margin-top:8px">
+      <button class="btn pri" data-a="jsave">Prüfen & speichern</button>
+      <button class="btn gho" data-a="jreset">Neu laden</button></div>
+    <div class="sep"></div>
+    <div class="warn"><b>Gefahrenzone</b><div class="spacer"></div>
+      <button class="btn bad big" data-a="reset">Alles zurücksetzen (Verlauf bleibt)</button>
+      <div class="hint" style="margin:8px 0">Leert Teilnehmer, Bars, Ergebnisse und Getränke. <b>/${ROOT}/log</b> bleibt unangetastet – der Abend ist danach über den Verlauf noch nachlesbar und pro Eintrag rekonstruierbar.</div>
+      <button class="btn bad big" data-a="wipelog">Auch Verlauf endgültig löschen</button></div>`);
+  return h;
+}
+function sec(id, title, cnt, body){
+  return `<details class="sec" data-sec="${id}" ${ui.open[id]?'open':''}><summary>${title}${cnt?` <span class="cnt">${cnt}</span>`:''}</summary><div class="secbody">${body}</div></details>`;
+}
+
+/* ───────────────────────── Schreib-Aktionen ───────────────────────── */
+const pName = id => ((D.participants||{})[id]||{}).name || '?';
+const lName = id => ((D.locations||{})[id]||{}).name || '?';
+const now = () => Date.now();
+
+async function setSips(lid,pid,v){
+  const k = rkey(lid,pid), cur = (D.results||{})[k];
+  const label = `Schlücke ${pName(pid)} @ ${lName(lid)}`;
+  v = Math.max(1, Math.round(num(v,1)));
+  if(cur && typeof cur==='object' && !cur.skipped && !cur.deleted)
+    await tx({ ['results/'+k+'/sips']: v }, { type:'sips', label });
+  else
+    await tx({ ['results/'+k]: { sips:v, skipped:false, deleted:false } }, { type:'sips', label });
+}
+async function setSkip(lid,pid,on){
+  const k = rkey(lid,pid), cur = (D.results||{})[k] || {};
+  await tx({ ['results/'+k]: { sips: on ? num(cur.sips,0) : Math.max(1,num(cur.sips,1)), skipped:!!on, deleted:false } },
+           { type:'skip', label:`${on?'Ausgesetzt':'Wieder mitgetrunken'}: ${pName(pid)} @ ${lName(lid)}` });
+}
+async function applyState(o){
+  const d = (o && typeof o==='object' && o.data && typeof o.data==='object') ? o.data : o;
+  if(!d || typeof d!=='object' || Array.isArray(d)) throw new Error('Das ist kein State-Objekt.');
+  const ch = {};
+  ['settings','participants','locations','results','drinks'].forEach(k => ch[k] = d[k]===undefined ? null : d[k]);
+  await tx(ch, { type:'restore', label:'State ersetzt (JSON/Backup)' });
+}
+function shrinkImage(file, cb){
+  const fr = new FileReader();
+  fr.onload = () => { const im = new Image();
+    im.onload = () => {
+      const max = 900, s = Math.min(1, max/Math.max(im.width,im.height));
+      const c = document.createElement('canvas'); c.width = Math.round(im.width*s); c.height = Math.round(im.height*s);
+      c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      cb(c.toDataURL('image/jpeg', 0.74));
+    };
+    im.onerror = () => toast('Bild konnte nicht gelesen werden');
+    im.src = fr.result; };
+  fr.onerror = () => toast('Datei konnte nicht gelesen werden');
+  fr.readAsDataURL(file);
+}
+
+/* ───────────────────────── Glücksrad ───────────────────────── */
+function drawWheel(){
+  const c = document.getElementById('wheel'); if(!c) return;
+  const size = Math.max(220, Math.min(360, window.innerWidth - 46));
+  const dpr = window.devicePixelRatio || 1;
+  c.style.width = size+'px'; c.style.height = size+'px';
+  c.width = Math.round(size*dpr); c.height = Math.round(size*dpr);
+  const x = c.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0);
+  const av = availableDrinks(ui.wheelLoc), R = size/2;
+  x.clearRect(0,0,size,size);
+  x.save(); x.translate(R,R);
+  if(!av.length){
+    x.beginPath(); x.arc(0,0,R-6,0,Math.PI*2); x.fillStyle='#1f232e'; x.fill();
+    x.strokeStyle='#2a2f3c'; x.lineWidth=3; x.stroke(); x.restore(); return;
+  }
+  const n = av.length, seg = Math.PI*2/n;
+  const fs = Math.max(9, Math.min(14, Math.round(150/n) + 3));
+  for(let i=0;i<n;i++){
+    const a0 = ui.angle + i*seg;
+    x.beginPath(); x.moveTo(0,0); x.arc(0,0,R-6,a0,a0+seg); x.closePath();
+    x.fillStyle = `hsl(${Math.round((i*360/n + 22) % 360)} 58% ${i%2?34:26}%)`; x.fill();
+    x.strokeStyle = 'rgba(0,0,0,.35)'; x.lineWidth = 1; x.stroke();
+    const mid = a0 + seg/2;
+    x.save(); x.rotate(mid);
+    x.fillStyle = '#fff'; x.textBaseline = 'middle';
+    let t = av[i].name, f = fs, maxW = R - 36;
+    const F = () => x.font = `700 ${f}px -apple-system,system-ui,sans-serif`;
+    F(); while(x.measureText(t).width > maxW && f > 8){ f--; F(); }
+    if(x.measureText(t).width > maxW){ while(t.length > 4 && x.measureText(t+'…').width > maxW) t = t.slice(0,-1); t += '…'; }
+    if(Math.cos(mid) < 0){ x.rotate(Math.PI); x.textAlign = 'left'; x.fillText(t, -(R-16), 0); }
+    else { x.textAlign = 'right'; x.fillText(t, R-16, 0); }
+    x.restore();
+  }
+  x.beginPath(); x.arc(0,0,R-6,0,Math.PI*2); x.strokeStyle='#ff7a29'; x.lineWidth=4; x.stroke();
+  x.beginPath(); x.arc(0,0,20,0,Math.PI*2); x.fillStyle='#0d0f14'; x.fill(); x.strokeStyle='#ff7a29'; x.lineWidth=3; x.stroke();
+  x.restore();
+}
+function spin(){
+  const av = availableDrinks(ui.wheelLoc);
+  if(!av.length){ toast('Keine Getränke übrig'); return; }
+  const t = Math.floor(Math.random()*av.length), seg = Math.PI*2/av.length;
+  let end = -Math.PI/2 - t*seg - seg/2;
+  while(end < ui.angle + Math.PI*2*4) end += Math.PI*2;
+  const from = ui.angle, dur = 3000, t0 = performance.now();
+  ui.spinning = true; ui.result = null;
+  const rEl = document.querySelector('.result'); if(rEl) rEl.textContent = '';
+  document.querySelectorAll('[data-a="spin"],[data-a="accept"],[data-a="reject"]').forEach(b => b.disabled = true);
+  requestAnimationFrame(function step(ts){
+    const p = Math.min(1, (ts-t0)/dur), e = 1 - Math.pow(1-p, 3);
+    ui.angle = from + (end-from)*e; drawWheel();
+    if(p < 1) requestAnimationFrame(step);
+    else { ui.spinning = false; ui.result = av[t].name; render(); try{ navigator.vibrate && navigator.vibrate(70); }catch(err){} }
+  });
+}
+
+/* Aktionen, die schreiben -> nur im Admin-Modus erlaubt. Alles andere
+   (Tab-Wechsel, Rad drehen, Login, Backup kopieren) darf jeder.        */
+const CLICK_WRITE = ['padd','pdel','ladd','ldel','lstat','ldrinkclr','lup','ldown','rejfree','rejclr',
+  'sm','sp','sdel','dadd','ddel','accept','reject','imgclr','logrev','restore','undo','bpaste','jsave','reset','wipelog'];
+const CHANGE_WRITE = ['manual','pname','lname','laddr','ldrink','ssk','sv','dname',
+  'setname','setpw','setmalus','setnorep','setimg','imgfile'];
+
+/* ───────────────────────── Events ───────────────────────── */
+document.addEventListener('toggle', e => {
+  const d = e.target.closest ? e.target.closest('details.sec') : null;
+  if(d && d.dataset.sec) ui.open[d.dataset.sec] = d.open;
+}, true);
+
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if(b) go(b.dataset.tab); });
+
+document.addEventListener('keydown', e => {
+  if(e.key !== 'Enter') return;
+  const m = { newpart:'padd', newloc:'ladd', newdrink:'dadd' }[e.target.id];
+  if(m){ e.preventDefault(); const b = document.querySelector('[data-a="'+m+'"]'); if(b) b.click(); }
+});
+document.addEventListener('input', e => { if(e.target.dataset && e.target.dataset.a==='jinput') ui.jsonDraft = e.target.value; });
+
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-a]'); if(!el) return;
+  const a = el.dataset.a, lid = el.dataset.l, pid = el.dataset.p, i = el.dataset.i;
+  if(CLICK_WRITE.includes(a) && !admin){ toast('Nur im Admin-Modus'); return; }
+  try{
+  switch(a){
+    case 'tab': go(el.dataset.t); break;
+    case 'maps': window.open(maps(el.dataset.adr), '_blank', 'noopener'); break;
+    case 'editbar': ui.sipsBar = lid; ui.open.sips = true; ui.wheelLoc = lid; go('admin'); break;
+    case 'login': {
+      const inp = document.querySelector('[data-a="pw"]'); const pw = inp ? inp.value : '';
+      if(pw && pw === String(S().password ?? 'aron2026')){ localStorage.setItem(ADMIN_KEY, pw); ui.pwWrong = false; checkAdmin(); toast('Admin-Modus aktiv'); }
+      else ui.pwWrong = true;
+      render(); break; }
+    case 'logout': localStorage.removeItem(ADMIN_KEY); admin = false; render(); break;
+
+    /* Teilnehmer */
+    case 'padd': { const inp = $('#newpart'), nm = (inp.value||'').trim(); if(!nm) return;
+      inp.value=''; await tx({ ['participants/'+nid('p')]: { name:nm, deleted:false } }, { type:'part-add', label:'Teilnehmer angelegt: '+nm }); break; }
+    case 'pdel': if(!confirm('Wirklich löschen? Landet im Papierkorb.')) return;
+      await tx({ ['participants/'+pid+'/deleted']:true, ['participants/'+pid+'/deletedAt']:now() }, { type:'part-del', label:'Teilnehmer gelöscht: '+pName(pid) }); break;
+
+    /* Bars */
+    case 'ladd': { const inp = $('#newloc'), nm = (inp.value||'').trim();
+      const mx = Math.max(0, ...locsAll().map(l=>num(l.order,0))); inp.value='';
+      await tx({ ['locations/'+nid('l')]: { name:nm, address:'', order:mx+1, status:'pending', drink:null, rejected:[], deleted:false } },
+               { type:'loc-add', label:'Bar angelegt: '+(nm||'(ohne Name)') }); break; }
+    case 'ldel': if(!confirm('Wirklich löschen? Landet im Papierkorb.')) return;
+      await tx({ ['locations/'+lid+'/deleted']:true, ['locations/'+lid+'/deletedAt']:now() }, { type:'loc-del', label:'Bar gelöscht: '+lName(lid) }); break;
+    case 'lstat': await tx({ ['locations/'+lid+'/status']: el.dataset.s }, { type:'status', label:'Status '+lName(lid) }); break;
+    case 'ldrinkclr': if(!confirm('Getränk verwerfen? Steht danach wieder im Verlauf.')) return;
+      await tx({ ['locations/'+lid+'/drink']: null }, { type:'drink', label:'Getränk verworfen @ '+lName(lid) }); break;
+    case 'lup': case 'ldown': {
+      const ls = locs(), ix = ls.findIndex(l=>l.id===lid), jx = a==='lup' ? ix-1 : ix+1;
+      if(ix<0 || jx<0 || jx>=ls.length) return;
+      await tx({ ['locations/'+ls[ix].id+'/order']: num(ls[jx].order,jx+1), ['locations/'+ls[jx].id+'/order']: num(ls[ix].order,ix+1) },
+               { type:'order', label:'Reihenfolge: '+(ls[ix].name||'?')+' ↔ '+(ls[jx].name||'?') }); break; }
+    case 'rejfree': { const arr = asArr(((D.locations||{})[lid]||{}).rejected).slice(); const gone = arr[Number(i)];
+      arr.splice(Number(i),1);
+      await tx({ ['locations/'+lid+'/rejected']: arr }, { type:'reject', label:'Freigegeben: '+gone+' @ '+lName(lid) }); break; }
+    case 'rejclr': await tx({ ['locations/'+lid+'/rejected']: [] }, { type:'reject', label:'Alle Ausschlüsse frei @ '+lName(lid) }); break;
+
+    /* Schlücke */
+    case 'sm': case 'sp': {
+      const b = barSips(lid), cur = (b[pid]||{}).sips;
+      const base = Number.isFinite(cur) ? cur : (a==='sp' ? 0 : 1);
+      await setSips(lid, pid, a==='sp' ? base+1 : base-1); break; }
+    case 'sdel': { if(!confirm('Wirklich löschen? Landet im Papierkorb.')) return;
+      const k = rkey(lid,pid);
+      await tx({ ['results/'+k+'/deleted']:true, ['results/'+k+'/deletedAt']:now() }, { type:'sips-del', label:'Schluck-Wert gelöscht: '+pName(pid)+' @ '+lName(lid) }); break; }
+
+    /* Getränke */
+    case 'dadd': { const inp = $('#newdrink'), nm = (inp.value||'').trim(); if(!nm) return;
+      inp.value='';
+      await tx({ ['drinks/'+nextDrinkIx()]: { name:nm, deleted:false } }, { type:'drink-add', label:'Getränk angelegt: '+nm }); break; }
+    case 'ddel': if(!confirm('Wirklich löschen? Landet im Papierkorb.')) return;
+      await tx({ ['drinks/'+i+'/deleted']:true }, { type:'drink-del', label:'Getränk gelöscht: '+((drinksAll().find(d=>d.i===String(i))||{}).name||'?') }); break;
+
+    /* Rad */
+    case 'spin': spin(); break;
+    case 'accept': { if(!ui.result) return;
+      await tx({ ['locations/'+ui.wheelLoc+'/drink']: ui.result, ['locations/'+ui.wheelLoc+'/status']:'active' },
+               { type:'drink', label:'Getränk gesetzt @ '+lName(ui.wheelLoc)+': '+ui.result });
+      ui.result = null; toast('Getränk übernommen'); go('tour'); break; }
+    case 'reject': { if(!ui.result) return;
+      const arr = asArr(((D.locations||{})[ui.wheelLoc]||{}).rejected).slice(); arr.push(ui.result);
+      const gone = ui.result; ui.result = null;
+      await tx({ ['locations/'+ui.wheelLoc+'/rejected']: arr }, { type:'reject', label:"Gibt's hier nicht: "+gone+' @ '+lName(ui.wheelLoc) });
+      setTimeout(spin, 260); break; }
+
+    /* Bild */
+    case 'imgclr': if(!confirm('Bild entfernen? Der alte Wert bleibt im Verlauf.')) return;
+      await tx({ 'settings/heroImage': '' }, { type:'image', label:'Bild entfernt' }); break;
+
+    /* Verlauf / Papierkorb / Werkzeuge */
+    case 'logrev': if(!confirm('Diesen Eintrag auf den alten Wert zurücksetzen?')) return; await revert(el.dataset.key,'revert'); break;
+    case 'logmore': ui.logMax += 120; render(); break;
+    case 'restore': { const t = (ui._trash||[])[Number(i)]; if(!t) return;
+      await tx(t.paths, { type:'restore', label:'Wiederhergestellt – '+t.label }); toast('Wiederhergestellt'); break; }
+    case 'undo': { const k = Object.keys(L||{}).sort().pop(); if(!k) return;
+      if(!confirm('Letzte Änderung zurücknehmen?\n\n'+(L[k].label||''))) return; await revert(k,'undo'); break; }
+    case 'bcopy': { const txt = JSON.stringify({ exported:now(), data:D, log:L }, null, 2);
+      try { await navigator.clipboard.writeText(txt); toast('Backup in der Zwischenablage'); }
+      catch(err){ const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); ta.remove(); toast('Backup kopiert'); } break; }
+    case 'bpaste': { let txt = '';
+      try { txt = await navigator.clipboard.readText(); } catch(err){}
+      if(!txt) txt = prompt('Backup-JSON hier einfügen:') || '';
+      if(!txt.trim()) return;
+      if(!confirm('Backup einspielen? Aktueller Stand wird ersetzt (bleibt im Verlauf).')) return;
+      await applyState(JSON.parse(txt)); toast('Backup eingespielt'); break; }
+    case 'jsave': { const ta = document.querySelector('[data-a="jinput"]');
+      const parsed = JSON.parse(ta.value);
+      if(!parsed || typeof parsed!=='object' || Array.isArray(parsed)) throw new Error('JSON muss ein Objekt sein.');
+      if(!confirm('State ersetzen? Alter Stand bleibt im Verlauf.')) return;
+      await applyState(parsed); ui.jsonDraft = null; toast('JSON gespeichert'); render(); break; }
+    case 'jreset': ui.jsonDraft = null; render(); break;
+    case 'reset': {
+      if(!confirm('ALLES zurücksetzen?\n\nTeilnehmer, Bars, Ergebnisse und Getränke werden geleert. Der Verlauf bleibt.')) return;
+      if(!confirm('Sicher? Zweite Bestätigung.\nDer Abend bleibt über den Verlauf nachlesbar und rekonstruierbar.')) return;
+      await tx({ participants:null, locations:null, results:null, drinks:null }, { type:'reset', label:'Alles zurückgesetzt' });
+      toast('Zurückgesetzt – Verlauf ist erhalten'); break; }
+    case 'wipelog': {
+      if(!confirm('Verlauf ENDGÜLTIG löschen?\n\nDanach ist nichts mehr rekonstruierbar.')) return;
+      if(!confirm('Wirklich endgültig? Das kann niemand zurückholen.')) return;
+      await store.update({ log:null }); toast('Verlauf gelöscht'); break; }
+  }
+  } catch(err){ toast('Fehler: '+err.message); }
+});
+
+document.addEventListener('change', async e => {
+  const el = e.target.closest('[data-a]'); if(!el) return;
+  const a = el.dataset.a, lid = el.dataset.l, pid = el.dataset.p, i = el.dataset.i, val = el.value;
+  if(a==='wloc' || a==='sbar'){ /* nur Ansicht, auch ohne Admin */ }
+  else if(!CHANGE_WRITE.includes(a)) return;              /* z.B. Passwortfeld: nichts zu tun */
+  else if(!admin){ toast('Nur im Admin-Modus'); return; }
+  try{
+  switch(a){
+    case 'wloc':  ui.wheelLoc = val; ui.result = null; render(); break;
+    case 'sbar':  ui.sipsBar = val; render(); break;
+    case 'manual': if(!val) return; if(!admin){ toast('Nur im Admin-Modus'); return; }
+      await tx({ ['locations/'+ui.wheelLoc+'/drink']: val, ['locations/'+ui.wheelLoc+'/status']:'active' },
+               { type:'drink', label:'Getränk manuell @ '+lName(ui.wheelLoc)+': '+val });
+      ui.result = null; toast('Getränk gesetzt'); go('tour'); break;
+    case 'pname': await tx({ ['participants/'+pid+'/name']: val.trim() }, { type:'part-name', label:'Teilnehmer umbenannt' }); break;
+    case 'lname': await tx({ ['locations/'+lid+'/name']: val.trim() }, { type:'loc-name', label:'Bar umbenannt' }); break;
+    case 'laddr': await tx({ ['locations/'+lid+'/address']: val.trim() }, { type:'loc-addr', label:'Adresse '+lName(lid) }); break;
+    case 'ldrink': if(!val) return;
+      await tx({ ['locations/'+lid+'/drink']: val }, { type:'drink', label:'Getränk manuell @ '+lName(lid)+': '+val }); break;
+    case 'ssk': await setSkip(lid, pid, el.checked); break;
+    case 'sv':  if(val==='' ){ render(); return; } await setSips(lid, pid, val); break;
+    case 'dname': await tx({ ['drinks/'+i+'/name']: val.trim() }, { type:'drink-name', label:'Getränk umbenannt' }); break;
+    case 'setname': await tx({ 'settings/eventName': val.trim() }, { type:'settings', label:'Event-Name' }); break;
+    case 'setpw': { const pw = val.trim(); if(!pw){ toast('Passwort darf nicht leer sein'); render(); return; }
+      await tx({ 'settings/password': pw }, { type:'settings', label:'Passwort geändert' });
+      localStorage.setItem(ADMIN_KEY, pw); toast('Passwort geändert – alter Zugang gilt nicht mehr'); break; }
+    case 'setmalus': await tx({ 'settings/skipMalus': Math.max(0, Math.round(num(val,3))) }, { type:'settings', label:'Malus für „ausgesetzt"' }); break;
+    case 'setnorep': await tx({ 'settings/noRepeatDrinks': el.checked }, { type:'settings', label:'Getränke nicht wiederholen' }); break;
+    case 'setimg': await tx({ 'settings/heroImage': val.trim() }, { type:'image', label:'Bild-URL' }); break;
+    case 'imgfile': { const f = el.files && el.files[0]; if(!f) return; toast('Bild wird verarbeitet…');
+      shrinkImage(f, async d => { try{ await tx({ 'settings/heroImage': d }, { type:'image', label:'Foto hochgeladen' }); toast('Bild gespeichert'); }
+                                  catch(err){ toast('Fehler: '+err.message); } }); break; }
+  }
+  } catch(err){ toast('Fehler: '+err.message); render(); }
+});
+
+addEventListener('resize', () => { if(ui.tab==='wheel' && !ui.spinning) drawWheel(); });
+
+/* ───────────────────────── Start ───────────────────────── */
+(async function main(){
+  setConn('verbinde…');
+  try { await initStore(); }
+  catch(err){
+    setConn('offline','bad');
+    $('#view').innerHTML = `<div class="card"><h2>Firebase konnte nicht geladen werden</h2>
+      <div class="hint" style="margin-top:8px">${esc(err.message)}<br><br>Internetverbindung prüfen oder Config in <code>index.html</code> kontrollieren.</div></div>`;
+    return;
+  }
+  setConn(store.mode==='firebase' ? 'live' : 'Demo-Modus', store.mode==='firebase' ? 'live' : 'local');
+  store.subscribe(snap => {
+    D = (snap && snap.data) || {};
+    L = (snap && snap.log)  || {};
+    checkAdmin();
+    seedIfEmpty();
+    render();
+  });
+})();
+</script>
+</body>
+</html>
