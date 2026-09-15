@@ -93,8 +93,9 @@ Vier Tabs unten:
 | **Admin** | Nach Passwort. Alles Weitere. |
 
 **Teilnehmer:** In `SEED_PARTICIPANTS` oben in `index.html` steht die Startliste
-(aktuell nur `Dome`). Sie greift nur bei einer leeren Datenbank; danach werden
-Teilnehmer im Admin-Tab angelegt.
+(aktuell nur `Dome`). Sie greift automatisch nur bei einer leeren Datenbank.
+Läuft die App schon, holt **Admin → Werkzeuge → „Startdaten abgleichen"** die
+fehlenden Namen nach – oder du legst sie direkt im Admin-Tab an.
 
 **Passwort:** Standard `$$$`, steht in `settings.password` und ist im
 Admin-Tab änderbar (`DEFAULT_PW` oben in `index.html` greift nur bei einer noch
@@ -132,6 +133,12 @@ dort nicht mit.
 * **Backup kopieren / einfügen:** kompletter State als JSON in die Zwischenablage
   und zurück.
 * **Roh-JSON-Editor** als Notausgang, mit Prüfung vor dem Speichern.
+* **„Startdaten abgleichen":** trägt die Einträge aus `SEED_PARTICIPANTS`,
+  `SEED_LOCATIONS` und `SEED_DRINKS` nach, die in der laufenden DB fehlen. Der
+  Button zeigt vorab, wie viele das sind, und fragt mit Namen nach. Verglichen
+  wird über den Namen (Groß-/Kleinschreibung egal); Vorhandenes wird nicht
+  angefasst und Gelöschtes aus dem Papierkorb kommt nicht zurück. Alles landet
+  als **ein** Log-Eintrag, ist also mit einem ↩︎ wieder weg.
 * **„Alles zurücksetzen"** (doppelte Bestätigung) leert `participants`,
   `locations`, `results` und `drinks`, **lässt `/aron-jga/log` unangetastet**.
   Der Abend ist danach über das Protokoll noch komplett nachlesbar und über ↩︎

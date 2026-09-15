@@ -378,6 +378,21 @@ async function seedIfEmpty(){
            { type:'seed', label:'Startdaten angelegt' });
 }
 
+/* Was aus den Startdaten in der laufenden DB fehlt. Verglichen wird ueber
+   den Namen; auch Geloeschtes zaehlt als vorhanden, damit nichts
+   zurueckkommt, was jemand absichtlich weggeraeumt hat.                */
+function seedDiff(){
+  const key = s => String(s||'').trim().toLowerCase();
+  const hasP = new Set(partsAll().map(p => key(p.name)));
+  const hasL = new Set(locsAll().map(l => key(l.name)));
+  const hasD = new Set(drinksAll().map(d => key(d.name)));
+  return {
+    participants: SEED_PARTICIPANTS.filter(n => n && !hasP.has(key(n))),
+    locations:    SEED_LOCATIONS.filter(l => l[0] && !hasL.has(key(l[0]))),
+    drinks:       SEED_DRINKS.filter(n => n && !hasD.has(key(n)))
+  };
+}
+
 /* ───────────────────────── Abgeleitete Daten ───────────────────────── */
 const S = () => D.settings || {};
 const partsAll = () => Object.entries(D.participants||{}).filter(([,p])=>p&&typeof p==='object').map(([id,p])=>({id,...p}));
@@ -722,12 +737,16 @@ function viewAdmin(){
 
   /* ── Werkzeuge ── */
   const lastKey = keys[0];
+  const sd = seedDiff(), seedCount = sd.participants.length + sd.locations.length + sd.drinks.length;
   h += sec('tools', '🧰 Werkzeuge', '', `
     <div class="hint" style="margin-bottom:10px">Verbindung: <b>${store.mode==='firebase'?'Firebase live':'Demo-Modus (nur dieses Gerät)'}</b>${store.url?`<br><code style="word-break:break-all">${esc(store.url)}</code>`:''}${store.mode==='local'?'<br>Mit <code>?demo=1</code> im Link erzwungen bzw. keine Firebase-Config.':''}</div>
     <button class="btn big" data-a="undo" ${lastKey?'':'disabled'}>↩︎ Letzte Änderung zurücknehmen${lastKey?`<span class="xs mu"> (${esc((L[lastKey].label||'').slice(0,26))})</span>`:''}</button>
     <div class="spacer"></div><div class="btnrow">
       <button class="btn" data-a="bcopy">📋 Backup kopieren</button>
       <button class="btn" data-a="bpaste">📥 Backup einfügen</button></div>
+    <div class="spacer"></div>
+    <button class="btn" data-a="seedsync">🔄 Startdaten abgleichen${seedCount?`<span class="xs mu"> (${seedCount} fehlen)</span>`:''}</button>
+    <div class="hint" style="margin-top:6px">Trägt Teilnehmer, Bars und Getränke aus den Startdaten nach, die hier noch fehlen. Vorhandenes bleibt unangetastet, Gelöschtes kommt nicht zurück. Rückgängig über „Letzte Änderung zurücknehmen“.</div>
     <div class="sep"></div>
     <div class="b">Roh-JSON-Editor (Notausgang)</div>
     <div class="hint" style="margin:4px 0 8px">Kompletter State unter <code>/${ROOT}/data</code>. Wird beim Speichern geprüft und komplett protokolliert.</div>
@@ -845,7 +864,7 @@ function spin(){
 /* Aktionen, die schreiben -> nur im Admin-Modus erlaubt. Alles andere
    (Tab-Wechsel, Rad drehen, Login, Backup kopieren) darf jeder.        */
 const CLICK_WRITE = ['padd','pdel','ladd','ldel','lstat','ldrinkclr','lup','ldown','rejfree','rejclr',
-  'sm','sp','sdel','dadd','ddel','accept','reject','imgclr','logrev','restore','undo','bpaste','jsave','reset','wipelog'];
+  'sm','sp','sdel','dadd','ddel','accept','reject','imgclr','logrev','restore','undo','bpaste','jsave','seedsync','reset','wipelog'];
 const CHANGE_WRITE = ['manual','pname','lname','laddr','ldrink','ssk','sv','dname',
   'setname','setpw','setmalus','setnorep','setimg','imgfile'];
 
@@ -961,6 +980,22 @@ document.addEventListener('click', async e => {
       if(!confirm('State ersetzen? Alter Stand bleibt im Verlauf.')) return;
       await applyState(parsed); ui.jsonDraft = null; toast('JSON gespeichert'); render(); break; }
     case 'jreset': ui.jsonDraft = null; render(); break;
+    case 'seedsync': {
+      const d = seedDiff(), n = d.participants.length + d.locations.length + d.drinks.length;
+      if(!n){ toast('Startdaten sind schon vollständig'); return; }
+      const list = [ d.participants.length?'Teilnehmer: '+d.participants.join(', '):'',
+                     d.locations.length?'Bars: '+d.locations.map(l=>l[0]).join(', '):'',
+                     d.drinks.length?'Getränke: '+d.drinks.join(', '):'' ].filter(Boolean).join('\n');
+      if(!confirm('Fehlende Startdaten nachtragen?\n\n'+list+'\n\nVorhandenes bleibt unverändert.')) return;
+      const ch = {}, used = new Set();
+      const uid = pre => { let id; do { id = nid(pre); } while(used.has(id)); used.add(id); return id; };
+      let mx = Math.max(0, ...locsAll().map(l=>num(l.order,0))), ix = nextDrinkIx();
+      d.participants.forEach(nm => { ch['participants/'+uid('p')] = { name:nm, deleted:false }; });
+      d.locations.forEach(l => { ch['locations/'+uid('l')] =
+        { name:l[0], address:l[1]||'', order:++mx, status:'pending', drink:null, rejected:[], deleted:false }; });
+      d.drinks.forEach(nm => { ch['drinks/'+(ix++)] = { name:nm, deleted:false }; });
+      await tx(ch, { type:'seed-sync', label:'Startdaten nachgetragen: '+n+' Einträge' });
+      toast(n+(n===1?' Eintrag':' Einträge')+' nachgetragen'); break; }
     case 'reset': {
       if(!confirm('ALLES zurücksetzen?\n\nTeilnehmer, Bars, Ergebnisse und Getränke werden geleert. Der Verlauf bleibt.')) return;
       if(!confirm('Sicher? Zweite Bestätigung.\nDer Abend bleibt über den Verlauf nachlesbar und rekonstruierbar.')) return;
