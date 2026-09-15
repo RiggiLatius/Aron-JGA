@@ -3,161 +3,295 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0d0f14">
+<meta name="theme-color" content="#0b0c11">
 <title>Aron JGA – Bar Crawl</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400..700&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,600..800&display=swap">
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* ═══ Tokens ═══ */
 :root{
-  --bg:#0d0f14; --card:#171a22; --card2:#1f232e; --line:#2a2f3c;
-  --tx:#f3f4f6; --mu:#98a0ae; --ac:#ff7a29; --ac2:#ffb066;
-  --ok:#39d98a; --bad:#ff5470; --gold:#ffd15c; --silver:#cfd6e4; --bronze:#e0955b;
+  color-scheme:dark;
+  --bg:#0b0c11; --bg-2:#0f1118;
+  --surf:#151822; --surf-2:#1d2130; --surf-3:#272c3c;
+  --line:#262b38; --line-2:#333a4c;
+  --tx:#f4f6fa; --tx-2:#a9b2c2; --tx-3:#727c8e;
+  --ac:#ff8a2b; --ac-h:#ffa45c; --ac-dim:rgba(255,138,43,.13); --ac-line:rgba(255,138,43,.42); --on-ac:#200d00;
+  --ok:#35d6a0; --ok-dim:rgba(53,214,160,.12); --ok-line:rgba(53,214,160,.38);
+  --bad:#ff5c7a; --bad-dim:rgba(255,92,122,.12); --bad-line:rgba(255,92,122,.38);
+  --gold:#ffc93c; --silver:#c6d0e2; --bronze:#d9884e;
+  --r-s:10px; --r-m:14px; --r-l:20px; --r-xl:28px;
+  --sh-1:0 1px 2px rgba(0,0,0,.45), 0 3px 10px rgba(0,0,0,.28);
+  --sh-2:0 6px 14px rgba(0,0,0,.45), 0 20px 40px rgba(0,0,0,.35);
+  --ff:"Archivo",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --fd:"Bricolage Grotesque","Archivo",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
 }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
 body{
   background:var(--bg); color:var(--tx);
-  font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  padding:0 0 calc(78px + env(safe-area-inset-bottom));
+  font-family:var(--ff); font-size:16px; line-height:1.45; font-weight:450;
+  font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1,"cv05" 1;
+  padding:0 0 calc(80px + env(safe-area-inset-bottom));
   -webkit-text-size-adjust:100%; overflow-x:hidden;
+  background-image:radial-gradient(120% 55% at 50% 0,rgba(255,138,43,.07),transparent 70%);
+  background-attachment:fixed;
 }
-h1,h2,h3{margin:0;font-weight:700;letter-spacing:-.01em}
-a{color:var(--ac2)}
-/* ---- Header ---- */
+h1,h2,h3{margin:0;font-family:var(--fd);font-weight:800;letter-spacing:-.025em;line-height:1.1;text-wrap:balance}
+h2{font-size:22px} h3{font-size:16px;letter-spacing:-.015em}
+a{color:var(--ac-h);text-underline-offset:3px;text-decoration-thickness:1px}
+/* ═══ Browser-Oberflächen ═══ */
+::selection{background:var(--ac);color:var(--on-ac)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px;border-radius:6px}
+input,textarea{caret-color:var(--ac)}
+*{scrollbar-width:thin;scrollbar-color:var(--surf-3) transparent}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:var(--surf-3);border-radius:99px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+/* ═══ Icons ═══ */
+.ic{width:20px;height:20px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.ic.lg{width:24px;height:24px}
+.ic.sm{width:16px;height:16px;stroke-width:2}
+/* ═══ Header ═══ */
 header{
-  position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;
-  padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
-  background:rgba(13,15,20,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+  position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:11px;
+  padding:calc(11px + env(safe-area-inset-top)) 16px 11px;
+  background:color-mix(in srgb,var(--bg) 86%,transparent);
+  backdrop-filter:blur(16px) saturate(140%);
+  border-bottom:1px solid var(--line);
 }
-header .thumb{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--ac);flex:0 0 auto;background:var(--card2)}
+header .thumb{display:block;width:36px;height:36px;border-radius:50%;object-fit:cover;flex:0 0 auto;
+  background:var(--surf-2);border:1.5px solid var(--ac)}
+#hdrimg:empty{display:none}
 header h1{font-size:19px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pill{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:5px 9px;border-radius:999px;background:var(--card2);color:var(--mu);border:1px solid var(--line)}
-.pill.live{color:var(--ok);border-color:#1e5f43}
-.pill.local{color:var(--gold);border-color:#5f4d1e}
-/* ---- Layout ---- */
-main{padding:14px 14px 24px;max-width:640px;margin:0 auto}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:0 0 12px}
-.card.tight{padding:11px 12px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:650;text-transform:uppercase;letter-spacing:.07em;
+  padding:6px 10px;border-radius:999px;background:var(--surf-2);color:var(--tx-2);border:1px solid var(--line)}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.85}
+.pill.live{color:var(--ok);border-color:var(--ok-line);background:var(--ok-dim)}
+.pill.live::before{animation:pulse 2.4s var(--ease) infinite}
+.pill.local{color:var(--gold);border-color:rgba(255,201,60,.34);background:rgba(255,201,60,.1)}
+.pill.bad{color:var(--bad);border-color:var(--bad-line);background:var(--bad-dim)}
+@keyframes pulse{0%,100%{opacity:.4;transform:scale(.8)}45%{opacity:1;transform:scale(1.15)}}
+/* ═══ Layout ═══ */
+main{padding:16px 16px 28px;max-width:660px;margin:0 auto}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:var(--r-l);padding:16px;margin:0 0 12px;box-shadow:var(--sh-1)}
+.card.tight{padding:12px 14px;border-radius:var(--r-m)}
+.card.flat{background:transparent;border-color:var(--line);box-shadow:none}
 .row{display:flex;align-items:center;gap:10px}
 .row.wrap{flex-wrap:wrap}
 .grow{flex:1;min-width:0}
-.mu{color:var(--mu)}
-.sm{font-size:13px}
-.xs{font-size:11.5px}
-.b{font-weight:700}
+.mu{color:var(--tx-2)}
+.sm{font-size:13.5px} .xs{font-size:12px}
+.b{font-weight:650}
 .center{text-align:center}
-.sep{height:1px;background:var(--line);margin:12px -14px}
-.hint{font-size:12.5px;color:var(--mu);line-height:1.35}
-.spacer{height:8px}
-/* ---- Hero ---- */
-.hero{position:relative;border-radius:18px;overflow:hidden;margin:0 0 12px;border:1px solid var(--line);background:var(--card)}
-.hero img{display:block;width:100%;max-width:100%;height:auto;max-height:52vh;object-fit:cover;object-position:center 22%}
-.hero.noimg{height:120px;display:grid;place-items:center;font-size:46px;background:linear-gradient(135deg,#241a12,#171a22)}
-.hero .cap{position:absolute;left:0;right:0;bottom:0;padding:26px 14px 12px;background:linear-gradient(transparent,rgba(8,9,12,.88));}
-.hero .cap .t{font-size:24px;font-weight:800;text-shadow:0 2px 12px #000}
-.hero .cap .s{font-size:13px;color:#e2e5ea;text-shadow:0 2px 10px #000}
-/* ---- Buttons ---- */
-button{font:inherit;color:inherit}
+.sep{height:1px;background:var(--line);margin:14px -16px}
+.hint{font-size:13px;color:var(--tx-2);line-height:1.45;max-width:62ch}
+.spacer{height:10px}
+.eyebrow{display:flex;align-items:center;gap:8px;margin:0 0 10px;color:var(--tx-2);font-size:12px;font-weight:650;letter-spacing:.09em;text-transform:uppercase}
+.eyebrow .ic{width:15px;height:15px;stroke-width:2}
+/* ═══ Hero ═══ */
+.hero{position:relative;border-radius:var(--r-xl);overflow:hidden;margin:0 0 14px;background:var(--surf);box-shadow:var(--sh-2)}
+.hero img{display:block;width:100%;max-width:100%;height:auto;max-height:50vh;object-fit:cover;object-position:center 22%}
+.hero.noimg{height:132px;display:grid;place-items:center;background:
+  radial-gradient(120% 120% at 20% 0,rgba(255,138,43,.35),transparent 60%),var(--surf-2)}
+.hero.noimg .ic{width:46px;height:46px;color:var(--ac);stroke-width:1.4}
+.hero .cap{position:absolute;inset:auto 0 0 0;padding:52px 18px 16px;
+  background:linear-gradient(transparent,rgba(6,7,10,.55) 42%,rgba(6,7,10,.93))}
+.hero .cap .t{font-family:var(--fd);font-size:clamp(26px,7vw,34px);font-weight:800;letter-spacing:-.035em;line-height:1}
+.hero .cap .s{margin-top:5px;font-size:13.5px;color:#d9dfea;font-weight:500}
+/* ═══ Buttons ═══ */
+button{font:inherit;color:inherit;font-family:var(--ff)}
 .btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  min-height:46px;padding:0 16px;border-radius:13px;border:1px solid var(--line);
-  background:var(--card2);color:var(--tx);font-weight:600;font-size:15px;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:46px;padding:0 16px;border-radius:var(--r-m);border:1px solid var(--line-2);
+  background:var(--surf-2);color:var(--tx);font-weight:600;font-size:15px;cursor:pointer;white-space:nowrap;
+  transition:background .16s var(--ease),border-color .16s var(--ease),transform .12s var(--ease),box-shadow .16s var(--ease);
 }
-.btn:active{transform:translateY(1px)}
-.btn.pri{background:var(--ac);border-color:var(--ac);color:#1b0d02;font-weight:800}
-.btn.ok{background:#13342a;border-color:#1e5f43;color:var(--ok)}
-.btn.bad{background:#3a1420;border-color:#5f1e2c;color:var(--bad)}
-.btn.gho{background:transparent}
-.btn.big{min-height:56px;font-size:17px;width:100%}
-.btn.sq{min-width:46px;padding:0 10px}
-.btn.mini{min-height:34px;font-size:13px;padding:0 10px;border-radius:10px}
-.btn[disabled]{opacity:.45;pointer-events:none}
-.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+@media(hover:hover){.btn:hover{background:var(--surf-3);border-color:var(--line-2)}}
+.btn:active{transform:scale(.975)}
+.btn.pri{background:var(--ac);border-color:var(--ac);color:var(--on-ac);font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,.45),0 10px 22px rgba(0,0,0,.3)}
+@media(hover:hover){.btn.pri:hover{background:var(--ac-h);border-color:var(--ac-h)}}
+.btn.ok{background:var(--ok-dim);border-color:var(--ok-line);color:var(--ok)}
+.btn.bad{background:var(--bad-dim);border-color:var(--bad-line);color:var(--bad)}
+.btn.gho{background:transparent;border-color:var(--line)}
+.btn.big{min-height:56px;font-size:17px;width:100%;border-radius:var(--r-l)}
+.btn.sq{min-width:46px;padding:0 11px}
+.btn.mini{min-height:34px;font-size:13px;padding:0 11px;border-radius:var(--r-s);gap:5px}
+.btn.mini .ic{width:15px;height:15px;stroke-width:2}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.btnrow{display:flex;gap:9px;flex-wrap:wrap}
 .btnrow>.btn{flex:1}
-/* ---- Inputs ---- */
+/* ═══ Eingaben ═══ */
 input[type=text],input[type=number],input[type=password],select,textarea{
-  font:inherit;width:100%;min-height:44px;padding:9px 11px;border-radius:11px;
-  background:#0f1218;border:1px solid var(--line);color:var(--tx);
+  font:inherit;font-family:var(--ff);width:100%;min-height:46px;padding:10px 12px;border-radius:var(--r-m);
+  background:var(--bg-2);border:1px solid var(--line);color:var(--tx);
+  transition:border-color .16s var(--ease),background .16s var(--ease);
 }
-input:focus,select:focus,textarea:focus{outline:2px solid var(--ac);outline-offset:-1px;border-color:var(--ac)}
-textarea{min-height:150px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.4}
-label.chk{display:inline-flex;align-items:center;gap:8px;min-height:44px;font-size:14px;cursor:pointer}
-label.chk input{width:24px;height:24px;min-height:0;accent-color:var(--ac)}
-.field{margin:0 0 10px}
-.field>span{display:block;font-size:12px;color:var(--mu);margin:0 0 4px;font-weight:600;letter-spacing:.02em}
-/* ---- Rank ---- */
-.rank{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--card);border:1px solid var(--line);margin:0 0 8px}
-.rank .pos{width:34px;height:34px;flex:0 0 auto;border-radius:10px;display:grid;place-items:center;font-weight:800;background:var(--card2);color:var(--mu)}
-.rank.p1{border-color:var(--gold);box-shadow:0 0 0 1px rgba(255,209,92,.25) inset}
-.rank.p1 .pos{background:var(--gold);color:#3a2b00}
-.rank.p2 .pos{background:var(--silver);color:#22262e}
-.rank.p3 .pos{background:var(--bronze);color:#2a1405}
-.rank .nm{font-size:17px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rank .big{font-size:30px;font-weight:800;line-height:1;letter-spacing:-.02em}
-.rank .big small{font-size:12px;font-weight:600;color:var(--mu);display:block;letter-spacing:0}
-/* ---- Tour ---- */
-.loc{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px;margin:0 0 10px;cursor:pointer}
-.loc.active{border-color:var(--ac);background:linear-gradient(180deg,rgba(255,122,41,.10),rgba(255,122,41,0))}
-.loc.done{opacity:.92}
-.loc .n{font-size:17px;font-weight:700}
-.loc .drink{font-size:26px;font-weight:800;color:var(--ac2);line-height:1.15;margin:8px 0 2px}
-.badge{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;padding:4px 8px;border-radius:999px;background:var(--card2);color:var(--mu);border:1px solid var(--line);white-space:nowrap}
-.badge.a{color:var(--ac);border-color:#6b3a15;background:#33200e}
-.badge.d{color:var(--ok);border-color:#1e5f43;background:#13342a}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.chip{font-size:12.5px;padding:5px 9px;border-radius:999px;background:var(--card2);border:1px solid var(--line)}
-.chip b{color:var(--ac2)}
-.chip.win{border-color:var(--gold);color:var(--gold)}
-/* ---- Wheel ---- */
-.wheelwrap{display:grid;place-items:center;position:relative;margin:4px 0 10px}
-canvas#wheel{max-width:100%;height:auto;touch-action:manipulation}
-.needle{position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:20px solid var(--ac);filter:drop-shadow(0 2px 4px #000)}
-.result{font-size:30px;font-weight:800;text-align:center;line-height:1.15;color:var(--ac2);margin:6px 0 10px;min-height:1.2em}
-/* ---- Admin ---- */
-details.sec{background:var(--card);border:1px solid var(--line);border-radius:16px;margin:0 0 10px;overflow:hidden}
-details.sec>summary{list-style:none;cursor:pointer;padding:15px 14px;font-weight:700;display:flex;align-items:center;gap:9px}
+input::placeholder,textarea::placeholder{color:var(--tx-3)}
+input:focus,select:focus,textarea:focus{border-color:var(--ac);background:var(--surf);outline:2px solid var(--ac);outline-offset:1px}
+select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a9b2c2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat;background-position:right 12px center;background-size:17px;padding-right:38px}
+textarea{min-height:170px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.5}
+label.chk{display:inline-flex;align-items:center;gap:9px;min-height:44px;font-size:14px;cursor:pointer}
+label.chk input{width:22px;height:22px;min-height:0;accent-color:var(--ac)}
+.field{margin:0 0 12px}
+.field>span{display:block;font-size:12px;color:var(--tx-2);margin:0 0 6px;font-weight:650;letter-spacing:.04em}
+/* ═══ Rangliste ═══ */
+.leader{position:relative;border-radius:var(--r-xl);padding:20px;margin:0 0 12px;overflow:hidden;
+  background:linear-gradient(150deg,rgba(255,201,60,.16),rgba(255,138,43,.05) 55%,transparent),var(--surf);
+  border:1px solid rgba(255,201,60,.3);box-shadow:var(--sh-2)}
+.leader .crown{display:flex;align-items:center;gap:7px;color:var(--gold);font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.leader .nm{font-family:var(--fd);font-size:clamp(28px,8vw,38px);font-weight:800;letter-spacing:-.035em;margin:6px 0 2px;line-height:1}
+.leader .sub{color:var(--tx-2);font-size:13.5px}
+.leader .num{font-family:var(--fd);font-size:clamp(46px,14vw,62px);font-weight:800;line-height:.85;letter-spacing:-.05em;color:var(--gold)}
+.leader .num small{display:block;font-family:var(--ff);font-size:11.5px;font-weight:650;letter-spacing:.09em;text-transform:uppercase;color:var(--tx-2);margin-top:7px}
+.rank{display:flex;align-items:center;gap:13px;padding:13px 14px;border-radius:var(--r-m);background:var(--surf);
+  border:1px solid var(--line);margin:0 0 8px;position:relative;overflow:hidden}
+.rank .meter{position:absolute;left:0;bottom:0;height:2.5px;border-radius:0 3px 3px 0;background:var(--ac);opacity:.55;pointer-events:none}
+.rank>*{position:relative}
+.rank .pos{width:30px;height:30px;flex:0 0 auto;border-radius:9px;display:grid;place-items:center;font-size:14px;
+  font-weight:700;background:var(--surf-2);color:var(--tx-2);border:1px solid var(--line)}
+.rank.p2 .pos{background:var(--silver);color:#1b1f27;border-color:transparent}
+.rank.p3 .pos{background:var(--bronze);color:#2a1405;border-color:transparent}
+.rank .nm{font-size:16.5px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.01em}
+.rank .big{font-family:var(--fd);font-size:27px;font-weight:800;line-height:1;letter-spacing:-.03em;text-align:right}
+.rank .big small{display:block;font-family:var(--ff);font-size:10.5px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:var(--tx-3);margin-top:4px}
+/* ═══ Tour ═══ */
+.tour{position:relative;padding-left:30px}
+.tour::before{content:"";position:absolute;left:9px;top:12px;bottom:14px;width:2px;border-radius:2px;
+  background:linear-gradient(var(--line-2),var(--line-2) 60%,transparent)}
+.loc{display:block;width:100%;text-align:left;background:var(--surf);border:1px solid var(--line);
+  border-radius:var(--r-l);padding:15px;margin:0 0 11px;cursor:pointer;position:relative;
+  transition:border-color .18s var(--ease),transform .14s var(--ease),background .18s var(--ease)}
+.loc::before{content:"";position:absolute;left:-26px;top:20px;width:12px;height:12px;border-radius:50%;
+  background:var(--bg);border:2px solid var(--line-2);box-shadow:0 0 0 4px var(--bg)}
+.loc.active::before{background:var(--ac);border-color:var(--ac);box-shadow:0 0 0 4px var(--bg)}
+.loc.done::before{background:var(--ok);border-color:var(--ok)}
+@media(hover:hover){.loc:hover{border-color:var(--line-2)}}
+.loc:active{transform:scale(.99)}
+.loc.active{border-color:var(--ac-line);background:linear-gradient(180deg,var(--ac-dim),transparent 60%),var(--surf)}
+.loc.done{background:var(--bg-2)}
+.loc .n{font-size:17px;font-weight:700;letter-spacing:-.015em}
+.loc .drink{display:flex;align-items:center;gap:9px;font-family:var(--fd);font-size:25px;font-weight:800;letter-spacing:-.03em;
+  color:var(--ac-h);line-height:1.1;margin:11px 0 2px}
+.loc .drink .ic{width:22px;height:22px;color:var(--ac);stroke-width:1.6}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  padding:5px 9px;border-radius:999px;background:var(--surf-2);color:var(--tx-2);border:1px solid var(--line);white-space:nowrap}
+.badge.a{color:var(--ac);border-color:var(--ac-line);background:var(--ac-dim)}
+.badge.d{color:var(--ok);border-color:var(--ok-line);background:var(--ok-dim)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;border-radius:999px;
+  background:var(--surf-2);border:1px solid var(--line);color:var(--tx-2)}
+.chip b{color:var(--tx);font-weight:700}
+.chip.win{border-color:rgba(255,201,60,.4);background:rgba(255,201,60,.1);color:var(--gold)}
+.chip.win b{color:var(--gold)}
+/* ═══ Rad ═══ */
+.wheelwrap{display:grid;place-items:center;position:relative;margin:6px 0 14px;padding:10px 0}
+canvas#wheel{max-width:100%;height:auto;touch-action:manipulation;
+  filter:drop-shadow(0 16px 36px rgba(0,0,0,.6))}
+.needle{position:absolute;top:2px;left:50%;transform:translateX(-50%);z-index:2;color:var(--ac);
+  filter:drop-shadow(0 3px 5px rgba(0,0,0,.6))}
+.result{display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--fd);font-size:clamp(24px,6.5vw,30px);
+  font-weight:800;letter-spacing:-.03em;text-align:center;line-height:1.15;color:var(--ac-h);margin:4px 0 12px;min-height:1.3em}
+.result .ic{width:26px;height:26px;color:var(--ac);stroke-width:1.6}
+/* ═══ Admin ═══ */
+details.sec{background:var(--surf);border:1px solid var(--line);border-radius:var(--r-l);margin:0 0 10px;overflow:hidden}
+details.sec>summary{list-style:none;cursor:pointer;padding:16px;font-weight:650;font-size:15.5px;display:flex;align-items:center;gap:10px;letter-spacing:-.01em}
 details.sec>summary::-webkit-details-marker{display:none}
-details.sec>summary::after{content:"▾";margin-left:auto;color:var(--mu)}
-details.sec[open]>summary::after{content:"▴"}
-details.sec>summary .cnt{font-size:11.5px;color:var(--mu);font-weight:600}
-.secbody{padding:0 14px 14px}
-.item{background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:10px;margin:0 0 9px}
-.stepper{display:flex;align-items:center;gap:7px}
-.stepper input{width:74px;text-align:center;font-size:20px;font-weight:800;min-height:46px}
-.logline{padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+details.sec>summary .ic{color:var(--tx-2)}
+details.sec[open]>summary{border-bottom:1px solid var(--line)}
+details.sec[open]>summary .ic.chev{transform:rotate(180deg)}
+.chev{margin-left:auto;color:var(--tx-3);transition:transform .2s var(--ease)}
+details.sec>summary .cnt{font-size:12px;color:var(--tx-3);font-weight:600;letter-spacing:0}
+.secbody{padding:14px 16px 16px}
+.item{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r-m);padding:11px;margin:0 0 9px}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper input{width:76px;text-align:center;font-family:var(--fd);font-size:21px;font-weight:800;min-height:46px}
+.logline{padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
 .logline:last-child{border-bottom:0}
-.logline .t{color:var(--mu);font-variant-numeric:tabular-nums}
-.logline .v{font-weight:700}
-.logline .from{color:var(--bad)}
-.logline .to{color:var(--ok)}
-.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#f3f4f6;color:#11131a;font-weight:700;font-size:14px;padding:11px 16px;border-radius:999px;z-index:60;box-shadow:0 8px 26px rgba(0,0,0,.5);max-width:92vw;text-align:center}
-.warn{background:#3a1420;border:1px solid #5f1e2c;color:#ffc2cd;border-radius:13px;padding:11px;font-size:13.5px}
-.note{background:#33200e;border:1px solid #6b3a15;color:#ffd6b5;border-radius:13px;padding:11px;font-size:13.5px}
+.logline .t{color:var(--tx-3)}
+.logline .v{font-weight:650}
+.logline .from{color:var(--bad)} .logline .to{color:var(--ok)}
+.toast{position:fixed;left:50%;bottom:calc(94px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  background:var(--tx);color:#101219;font-weight:650;font-size:14px;padding:12px 18px;border-radius:999px;z-index:60;
+  box-shadow:var(--sh-2);max-width:92vw;text-align:center;animation:toastin .32s var(--ease)}
+@keyframes toastin{from{opacity:0;transform:translate(-50%,10px) scale(.96)}}
+.warn{background:var(--bad-dim);border:1px solid var(--bad-line);color:#ffc7d1;border-radius:var(--r-m);padding:13px;font-size:13.5px}
+.note{display:flex;gap:10px;background:var(--ac-dim);border:1px solid var(--ac-line);color:#ffdcc0;border-radius:var(--r-m);padding:13px;font-size:13.5px}
+.note .ic{color:var(--ac);margin-top:1px}
+.note b{color:#fff}
 .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-/* ---- Tabbar ---- */
+/* ═══ Tableiste ═══ */
 nav.tabs{
   position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;
-  background:rgba(15,17,23,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line);
-  padding:0 0 env(safe-area-inset-bottom);
+  background:color-mix(in srgb,var(--bg-2) 88%,transparent);backdrop-filter:blur(18px) saturate(140%);
+  border-top:1px solid var(--line);padding:0 0 env(safe-area-inset-bottom);
 }
 nav.tabs button{
-  flex:1;background:none;border:0;padding:9px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;
-  color:var(--mu);font-size:11px;font-weight:700;cursor:pointer;min-height:62px;justify-content:center;
+  flex:1;background:none;border:0;padding:10px 2px;display:flex;flex-direction:column;align-items:center;gap:5px;
+  color:var(--tx-3);font-size:11px;font-weight:650;cursor:pointer;min-height:64px;justify-content:center;
+  transition:color .18s var(--ease);position:relative;
 }
-nav.tabs button .ic{font-size:21px;line-height:1}
+nav.tabs button .ic{width:23px;height:23px;transition:transform .24s var(--ease)}
 nav.tabs button.on{color:var(--ac)}
+nav.tabs button.on .ic{transform:translateY(-1px)}
+nav.tabs button.on::after{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:26px;height:2.5px;
+  border-radius:0 0 3px 3px;background:var(--ac)}
+/* ═══ Bewegung ═══ */
+.enter>*{animation:rise .5s var(--ease) both}
+.enter>*:nth-child(1){animation-delay:.01s} .enter>*:nth-child(2){animation-delay:.05s}
+.enter>*:nth-child(3){animation-delay:.09s} .enter>*:nth-child(4){animation-delay:.13s}
+.enter>*:nth-child(5){animation-delay:.17s} .enter>*:nth-child(n+6){animation-delay:.2s}
+@keyframes rise{from{opacity:0;transform:translateY(12px) scale(.985);filter:blur(3px)}}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 3h8v5.5a4 4 0 0 1-8 0V3Z"/><path d="M8 5H5.4a2.4 2.4 0 0 0 0 4.8H8M16 5h2.6a2.4 2.4 0 0 1 0 4.8H16"/><path d="M12 12.5V16M9 20h6M10.2 16h3.6l.5 4h-4.6Z"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21.2C12 21.2 19 15.6 19 10a7 7 0 1 0-14 0c0 5.6 7 11.2 7 11.2Z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+<symbol id="i-wheel" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><circle cx="12" cy="12" r="2.2"/><path d="M12 3.4v6.4M12 14.2v6.4M3.4 12h6.4M14.2 12h6.4M5.9 5.9l4.5 4.5M13.6 13.6l4.5 4.5M18.1 5.9l-4.5 4.5M10.4 13.6l-4.5 4.5"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h7M15.5 7H20M4 12h11M19 12h1M4 17h4M12.5 17H20"/><circle cx="13" cy="7" r="2.2"/><circle cx="17" cy="12" r="2.2"/><circle cx="10.2" cy="17" r="2.2"/></symbol>
+<symbol id="i-glass" viewBox="0 0 24 24"><path d="M4.5 4h15l-7.5 8.6V19"/><path d="M8.2 19h7.6M7 7.2h10"/></symbol>
+<symbol id="i-beer" viewBox="0 0 24 24"><path d="M6.2 8.6h9v9.6a2.2 2.2 0 0 1-2.2 2.2H8.4a2.2 2.2 0 0 1-2.2-2.2V8.6Z"/><path d="M15.2 10.8h2.4a2.4 2.4 0 0 1 0 4.8h-2.4"/><path d="M6.2 8.6a2.6 2.6 0 0 1 2.4-2.6 2.4 2.4 0 0 1 4.2-1.3 2.4 2.4 0 0 1 2.4 3.9"/><path d="M9.4 12.2v4.4M12 12.2v4.4"/></symbol>
+<symbol id="i-map" viewBox="0 0 24 24"><path d="M9.2 4.2 3.5 6.3v13.5l5.7-2.1 5.6 2.1 5.7-2.1V4.2l-5.7 2.1-5.6-2.1Z"/><path d="M9.2 4.2v13.5M14.8 6.3v13.5"/></symbol>
+<symbol id="i-pencil" viewBox="0 0 24 24"><path d="M12.5 20.2H21"/><path d="M16.4 3.6a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4 11.4-11.4Z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M8.4 12.3l2.6 2.6 4.6-5.2"/></symbol>
+<symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M5.9 5.9l12.2 12.2"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9.2" cy="8.2" r="3.4"/><path d="M3 20a6.2 6.2 0 0 1 12.4 0"/><path d="M16.4 5.2a3.4 3.4 0 0 1 0 6.6M17.6 14.4A5.6 5.6 0 0 1 21 20"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 6.8h15M9.6 6.8V5.2a1.2 1.2 0 0 1 1.2-1.2h2.4a1.2 1.2 0 0 1 1.2 1.2v1.6"/><path d="M6.4 6.8l.9 12.1a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.9-12.1"/><path d="M10.4 10.6v6M13.6 10.6v6"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5.2v13.6M5.2 12h13.6"/></symbol>
+<symbol id="i-minus" viewBox="0 0 24 24"><path d="M5.2 12h13.6"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19.2V5.4M6.2 11.2 12 5.4l5.8 5.8"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4.8v13.8M17.8 12.8 12 18.6l-5.8-5.8"/></symbol>
+<symbol id="i-undo" viewBox="0 0 24 24"><path d="M3.4 7.6v5.2h5.2"/><path d="M4.3 12.8a8 8 0 1 0 2.2-6.4L3.4 9.2"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20.4 12a8.4 8.4 0 1 1-2.5-6"/><path d="M20.6 3.6v5.2h-5.2"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11.2" height="11.2" rx="2.2"/><path d="M5.4 15H4.8A2 2 0 0 1 2.8 13V4.8a2 2 0 0 1 2-2H13a2 2 0 0 1 2 2v.6"/></symbol>
+<symbol id="i-paste" viewBox="0 0 24 24"><path d="M12 3.4v11.8M7.2 10.6 12 15.4l4.8-4.8"/><path d="M4 20.2h16"/></symbol>
+<symbol id="i-tools" viewBox="0 0 24 24"><path d="M3.4 9.4h17.2v9.4a1.6 1.6 0 0 1-1.6 1.6H5a1.6 1.6 0 0 1-1.6-1.6V9.4Z"/><path d="M8.4 9.4V6.2a2 2 0 0 1 2-2h3.2a2 2 0 0 1 2 2v3.2M3.4 13.6h17.2M11 13v1.8h2V13"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M12 7.2V12l3.2 2"/></symbol>
+<symbol id="i-camera" viewBox="0 0 24 24"><path d="M3.4 8.8h3.2l1.5-2.2h7.8l1.5 2.2h3.2a.9.9 0 0 1 .9.9v8.6a.9.9 0 0 1-.9.9H3.4a.9.9 0 0 1-.9-.9V9.7a.9.9 0 0 1 .9-.9Z"/><circle cx="12" cy="13.8" r="3.4"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M6.2 9.4 12 15.2l5.8-5.8"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.8 21 19.8H3l9-16Z"/><path d="M12 10v4.2M12 17.4h.01"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M8.4 6.4h11.2M8.4 12h11.2M8.4 17.6h11.2M4.4 6.4h.01M4.4 12h.01M4.4 17.6h.01"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6.2 6.2 17.8 17.8M17.8 6.2 6.2 17.8"/></symbol>
+<symbol id="i-flag" viewBox="0 0 24 24"><path d="M5.4 21V3.8M5.4 4.6h11.4l-1.9 3.6 1.9 3.6H5.4"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.4" y="10.4" width="15.2" height="10" rx="2.2"/><path d="M8.2 10.4V7.8a3.8 3.8 0 0 1 7.6 0v2.6"/></symbol>
+</defs></svg>
 <header>
-  <img class="thumb" id="hdrimg" alt="" hidden>
+  <span id="hdrimg"></span>
   <h1 id="hdrname">Aron JGA</h1>
   <span class="pill" id="conn">…</span>
 </header>
 <main id="view"><div class="card mu">Lade…</div></main>
 <nav class="tabs" id="tabs">
-  <button data-tab="rank" class="on"><span class="ic">🏆</span>Rangliste</button>
-  <button data-tab="tour"><span class="ic">📍</span>Tour</button>
-  <button data-tab="wheel"><span class="ic">🎡</span>Rad</button>
-  <button data-tab="admin"><span class="ic">⚙️</span>Admin</button>
+  <button data-tab="rank" class="on"><svg class="ic" aria-hidden="true"><use href="#i-trophy"></use></svg>Rangliste</button>
+  <button data-tab="tour"><svg class="ic" aria-hidden="true"><use href="#i-pin"></use></svg>Tour</button>
+  <button data-tab="wheel"><svg class="ic" aria-hidden="true"><use href="#i-wheel"></use></svg>Rad</button>
+  <button data-tab="admin"><svg class="ic" aria-hidden="true"><use href="#i-sliders"></use></svg>Admin</button>
 </nav>
 
 <script type="module">
@@ -235,6 +369,8 @@ const $  = s => document.querySelector(s);
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num = (v,d) => { const n = Number(v); return Number.isFinite(n) ? n : d; };
 const asArr = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []);
+/* Icons liegen als <symbol> im Sprite oben in der Seite. */
+const ico = (n, cls) => `<svg class="ic${cls?' '+cls:''}" aria-hidden="true"><use href="#i-${n}"></use></svg>`;
 const nid = p => p + Date.now().toString(36).slice(-5) + Math.floor(Math.random()*1296).toString(36).padStart(2,'0');
 const clone = o => JSON.parse(JSON.stringify(o===undefined?null:o));
 const getPath = (o,p) => p.split('/').reduce((a,k)=> (a==null?undefined:a[k]), o);
@@ -575,7 +711,7 @@ function heroBroke(ev){                               /* markiert genau die Quel
 
 /* ───────────────────────── UI-Zustand ───────────────────────── */
 const ui = { tab:'rank', sipsBar:null, wheelLoc:null, spinning:false, angle:0, result:null, open:{}, pwWrong:false, logMax:60,
-             seedOpen:false, seedSel:{} };
+             seedOpen:false, seedSel:{}, anim:true };
 let admin = false;
 const ADMIN_KEY = 'aron-jga-admin';
 function checkAdmin(){ const pw = localStorage.getItem(ADMIN_KEY); admin = !!pw && pw === String(S().password ?? DEFAULT_PW); return admin; }
@@ -600,12 +736,17 @@ function render(){
 
   $('#hdrname').textContent = S().eventName || 'Aron JGA';
   document.title = (S().eventName || 'Aron JGA') + ' – Bar Crawl';
-  const hi = $('#hdrimg');
-  hi.hidden = !heroOk();
-  hi.onerror = heroBroke;
-  if(heroOk() && hi.getAttribute('src') !== heroSrc()) hi.src = heroSrc();
+  const hi = $('#hdrimg'), hsrc = heroOk() ? heroSrc() : '';
+  const cur = hi.firstElementChild;
+  if(!hsrc){ hi.innerHTML = ''; }
+  else if(!cur || cur.getAttribute('src') !== hsrc){
+    hi.innerHTML = `<img class="thumb" src="${esc(hsrc)}" alt="Aron">`;
+    hi.firstElementChild.onerror = heroBroke;
+  }
 
   const v = $('#view');
+  v.className = ui.anim ? 'enter' : '';     /* Auftritt nur beim Tabwechsel, nicht bei jedem Datenstand */
+  ui.anim = false;
   v.innerHTML = (dbError ? `<div class="warn" style="margin-bottom:12px"><b>Keine Verbindung zur Datenbank</b><div class="spacer"></div>${esc(dbError)}</div>` : '')
     + (ui.tab==='rank' ? viewRank() : ui.tab==='tour' ? viewTour() : ui.tab==='wheel' ? viewWheel() : viewAdmin());
   [...document.querySelectorAll('#tabs button')].forEach(b => b.classList.toggle('on', b.dataset.tab===ui.tab));
@@ -617,13 +758,13 @@ function render(){
     if(el){ el.focus({preventScroll:true}); if(sel && el.setSelectionRange){ try{ el.setSelectionRange(sel[0],sel[1]); }catch(e){} } window.scrollTo(0,scroll); }
   }
 }
-function go(tab){ ui.tab = tab; render(); window.scrollTo(0,0); }
+function go(tab){ ui.tab = tab; ui.anim = true; render(); window.scrollTo(0,0); }
 
 /* ── Hero ── */
 function heroBlock(){
   const cap = `<div class="cap"><div class="t">${esc(S().eventName||'Aron JGA')}</div>
     <div class="s">Bar-Tour Stuttgart · wenige Schlücke = gut</div></div>`;
-  if(!heroOk()) return `<div class="hero noimg">🍻${cap}</div>`;
+  if(!heroOk()) return `<div class="hero noimg">${ico('beer')}${cap}</div>`;
   return `<div class="hero"><img src="${esc(heroSrc())}" alt="Aron">${cap}</div>`;
 }
 
@@ -631,19 +772,30 @@ function heroBlock(){
 function viewRank(){
   const rows = ranking();
   let h = heroBlock();
-  h += `<div class="note" style="margin-bottom:12px">🏆 <b>Wenige Schlücke = gut.</b> Wer am Ende die wenigsten Schlücke gebraucht hat, gewinnt.</div>`;
+  h += `<div class="note" style="margin-bottom:14px">${ico('trophy')}<div><b>Wenige Schlücke = gut.</b> Wer am Ende die wenigsten Schlücke gebraucht hat, gewinnt.</div></div>`;
   if(!rows.length){
-    h += `<div class="card center mu">Noch keine Teilnehmer.<div class="spacer"></div><button class="btn pri" data-a="tab" data-t="admin">Teilnehmer anlegen</button></div>`;
+    h += `<div class="card center"><div class="mu">Noch keine Teilnehmer.</div><div class="spacer"></div>
+      <button class="btn pri" data-a="tab" data-t="admin">${ico('users')}Teilnehmer anlegen</button></div>`;
   } else {
-    h += rows.map((r,i) => `<div class="rank p${i+1}">
-        <div class="pos">${i+1}</div>
+    const lead = rows[0], max = Math.max(1, ...rows.map(r=>r.total));
+    h += `<div class="leader">
+      <div class="row" style="align-items:flex-start">
+        <div class="grow"><div class="crown">${ico('trophy','sm')}Führt</div>
+          <div class="nm">${esc(lead.name||'(ohne Name)')}</div>
+          <div class="sub">${lead.n} Getränk${lead.n===1?'':'e'} · Ø ${lead.n? lead.avg.toFixed(1):'–'} pro Bar</div></div>
+        <div class="num">${lead.total}<small>Schlücke</small></div>
+      </div></div>`;
+    h += rows.slice(1).map((r,i) => `<div class="rank p${i+2}">
+        <div class="meter" style="width:${Math.round(r.total/max*100)}%"></div>
+        <div class="pos">${i+2}</div>
         <div class="grow"><div class="nm">${esc(r.name||'(ohne Name)')}</div>
           <div class="sm mu">${r.n} Getränk${r.n===1?'':'e'} · Ø ${r.n? r.avg.toFixed(1):'–'}</div></div>
-        <div class="big center">${r.total}<small>Schlücke</small></div>
+        <div class="big">${r.total}<small>Schlücke</small></div>
       </div>`).join('');
   }
   const done = locs().filter(l => l.status==='done');
-  h += `<div class="card"><h3>Bar-Sieger</h3><div class="hint">Wenigste Schlücke pro abgeschlossener Bar.</div><div class="sep"></div>`;
+  h += `<div class="card"><div class="eyebrow">${ico('flag')}Bar-Sieger</div>
+    <div class="hint" style="margin:-4px 0 0">Wenigste Schlücke pro abgeschlossener Bar.</div><div class="sep"></div>`;
   h += done.length ? done.map(l => { const w = barWinner(l.id);
       return `<div class="row" style="padding:7px 0"><div class="grow"><div class="b">${esc(l.name||'(ohne Name)')}</div>
       <div class="xs mu">${esc(l.drink||'kein Getränk')}</div></div>
@@ -660,7 +812,7 @@ function viewTour(){
   const ls = locs();
   if(!ls.length) return `<div class="card center mu">Keine Bars.<div class="spacer"></div><button class="btn pri" data-a="tab" data-t="admin">Bars anlegen</button></div>`;
   const names = Object.fromEntries(parts().map(p=>[p.id,p.name]));
-  return ls.map(l => {
+  return `<div class="tour">` + ls.map(l => {
     const st = STAT[l.status] || STAT.pending;
     const b = barSips(l.id), w = barWinner(l.id);
     const chips = Object.entries(b).filter(([pid])=>!pid.startsWith('_'))
@@ -670,14 +822,15 @@ function viewTour(){
       <div class="row"><div class="grow"><div class="n">${num(l.order,0)}. ${esc(l.name||'(Name noch offen)')}</div>
         ${l.address ? `<div class="sm mu">${esc(l.address)}</div>` : `<div class="sm mu">Adresse noch offen</div>`}</div>
         <span class="badge ${st[1]}">${st[0]}</span></div>
-      ${l.drink ? `<div class="drink">🍹 ${esc(l.drink)}</div>` : (l.status==='active' ? `<div class="drink mu" style="font-size:18px">Noch nicht gedreht</div>` : '')}
+      ${l.drink ? `<div class="drink">${ico('glass')}${esc(l.drink)}</div>`
+                : (l.status==='active' ? `<div class="drink mu" style="font-size:17px;font-family:var(--ff);font-weight:600;letter-spacing:0">Noch nicht gedreht</div>` : '')}
       ${chips ? `<div class="chips">${chips}</div>` : ''}
       <div class="row wrap" style="margin-top:10px;gap:8px">
-        ${l.address ? `<span class="btn mini" data-a="maps" data-adr="${esc(l.address)}">🗺️ Karte</span>` : ''}
-        ${l.status==='active' && !l.drink ? `<span class="btn mini pri" data-a="tab" data-t="wheel">🎡 Rad drehen</span>` : ''}
-        <span class="btn mini gho">✏️ Nachbearbeiten</span>
+        ${l.address ? `<span class="btn mini" data-a="maps" data-adr="${esc(l.address)}">${ico('map')}Karte</span>` : ''}
+        ${l.status==='active' && !l.drink ? `<span class="btn mini pri" data-a="tab" data-t="wheel">${ico('wheel')}Rad drehen</span>` : ''}
+        <span class="btn mini gho">${ico('pencil')}Nachbearbeiten</span>
       </div></button>`;
-  }).join('');
+  }).join('') + `</div>`;
 }
 
 /* ══ Rad ══ */
@@ -692,17 +845,19 @@ function viewWheel(){
       <select data-a="wloc" data-k="wloc">${ls.map(l=>`<option value="${l.id}" ${l.id===lid?'selected':''}>${num(l.order,0)}. ${esc(l.name||'(ohne Name)')} — ${(STAT[l.status]||STAT.pending)[0]}</option>`).join('')}</select>
     </div></div>`;
   if(loc.drink) h += `<div class="note" style="margin-bottom:12px">Aktuell eingetragen: <b>${esc(loc.drink)}</b>${admin?' – neu drehen oder unten manuell ändern.':''}</div>`;
-  h += `<div class="wheelwrap"><div class="needle"></div><canvas id="wheel" width="340" height="340"></canvas></div>`;
-  h += `<div class="result">${ui.result ? '🍹 '+esc(ui.result) : (av.length? '' : 'Keine Getränke übrig')}</div>`;
+  h += `<div class="wheelwrap">
+      <svg class="needle" width="26" height="22" viewBox="0 0 26 22" aria-hidden="true"><path d="M13 22 2.6 2.4A2 2 0 0 1 4.4 0h17.2a2 2 0 0 1 1.8 2.4L13 22Z" fill="currentColor"/></svg>
+      <canvas id="wheel" width="340" height="340"></canvas></div>`;
+  h += `<div class="result">${ui.result ? ico('glass')+esc(ui.result) : (av.length? '' : 'Keine Getränke übrig')}</div>`;
   if(!av.length){
     h += `<div class="warn">Für diese Bar sind alle Getränke ausgeschlossen (abgelehnt oder schon getrunken). Im Admin-Tab freigeben oder Getränke ergänzen.</div>`;
   } else {
-    h += `<button class="btn pri big" data-a="spin">🎡 Drehen (${av.length} Getränke)</button>`;
+    h += `<button class="btn pri big" data-a="spin">${ico('wheel','lg')}Drehen · ${av.length} Getränke</button>`;
   }
   if(ui.result){
     h += `<div class="spacer"></div><div class="btnrow">
-      <button class="btn ok" data-a="accept">✅ Passt</button>
-      <button class="btn bad" data-a="reject">🚫 Gibt's hier nicht</button></div>`;
+      <button class="btn ok" data-a="accept">${ico('check')}Passt</button>
+      <button class="btn bad" data-a="reject">${ico('ban')}Gibt's hier nicht</button></div>`;
   }
   h += `<div class="spacer"></div><div class="card"><div class="field" style="margin:0"><span>Getränk manuell wählen (Fallback)</span>
       <select data-a="manual" data-k="manual"><option value="">– auswählen –</option>
@@ -732,24 +887,24 @@ function viewAdmin(){
   if(store.mode==='local') h += `<div class="warn" style="margin-bottom:12px"><b>Demo-Modus:</b> Firebase-Config fehlt, Daten liegen nur auf diesem Gerät. Config oben in <code>index.html</code> eintragen.</div>`;
 
   /* ── Teilnehmer ── */
-  h += sec('parts', '👥 Teilnehmer', ps.length+' aktiv', `
+  h += sec('parts', 'users', 'Teilnehmer', ps.length+' aktiv', `
     <div class="row" style="margin-bottom:10px"><input type="text" data-k="newpart" id="newpart" placeholder="Name" autocomplete="off">
-      <button class="btn pri sq" data-a="padd">＋</button></div>
+      <button class="btn pri sq" data-a="padd" title="Teilnehmer anlegen">${ico('plus')}</button></div>
     ${ps.map(p=>`<div class="item"><div class="row">
         <input type="text" class="grow" value="${esc(p.name||'')}" data-a="pname" data-p="${p.id}" data-k="pn_${p.id}">
-        <button class="btn sq bad" data-a="pdel" data-p="${p.id}" title="löschen">🗑</button></div></div>`).join('') || '<div class="mu sm">Noch keine Teilnehmer.</div>'}
+        <button class="btn sq bad" data-a="pdel" data-p="${p.id}" title="Teilnehmer löschen">${ico('trash')}</button></div></div>`).join('') || '<div class="mu sm">Noch keine Teilnehmer.</div>'}
     <div class="hint">Später Dazugekommene: frühere Bars bleiben leer und zählen nicht mit. Löschen = Papierkorb, Schluck-Werte bleiben erhalten.</div>`);
 
   /* ── Bars ── */
-  h += sec('locs', '📍 Bars', lsv.length+' aktiv', `
+  h += sec('locs', 'pin', 'Bars', lsv.length+' aktiv', `
     <div class="row" style="margin-bottom:10px"><input type="text" data-k="newloc" id="newloc" placeholder="Name der Bar" autocomplete="off">
-      <button class="btn pri sq" data-a="ladd">＋</button></div>
+      <button class="btn pri sq" data-a="ladd" title="Bar anlegen">${ico('plus')}</button></div>
     ${lsv.map((l,i)=>`<div class="item">
       <div class="row" style="margin-bottom:7px">
         <span class="badge">${num(l.order,0)}</span>
         <input type="text" class="grow" value="${esc(l.name||'')}" placeholder="Name" data-a="lname" data-l="${l.id}" data-k="ln_${l.id}">
-        <button class="btn sq" data-a="lup" data-l="${l.id}" ${i===0?'disabled':''}>↑</button>
-        <button class="btn sq" data-a="ldown" data-l="${l.id}" ${i===lsv.length-1?'disabled':''}>↓</button>
+        <button class="btn sq" data-a="lup" data-l="${l.id}" title="nach oben" ${i===0?'disabled':''}>${ico('up')}</button>
+        <button class="btn sq" data-a="ldown" data-l="${l.id}" title="nach unten" ${i===lsv.length-1?'disabled':''}>${ico('down')}</button>
       </div>
       <input type="text" value="${esc(l.address||'')}" placeholder="Adresse" data-a="laddr" data-l="${l.id}" data-k="la_${l.id}">
       <div class="btnrow" style="margin-top:8px">
@@ -762,15 +917,15 @@ function viewAdmin(){
       <div class="field" style="margin:8px 0 0"><select data-a="ldrink" data-l="${l.id}" data-k="ld_${l.id}">
         <option value="">Getränk manuell setzen…</option>
         ${drinks().map(d=>`<option value="${esc(d.name)}" ${l.drink===d.name?'selected':''}>${esc(d.name)}</option>`).join('')}</select></div>
-      ${asArr(l.rejected).length?`<div class="chips">${asArr(l.rejected).map((r,ri)=>`<span class="chip">🚫 ${esc(r)} <span class="btn mini" data-a="rejfree" data-l="${l.id}" data-i="${ri}" style="min-height:22px;padding:0 6px">frei</span></span>`).join('')}
+      ${asArr(l.rejected).length?`<div class="chips">${asArr(l.rejected).map((r,ri)=>`<span class="chip">${ico('ban','sm')}${esc(r)} <span class="btn mini" data-a="rejfree" data-l="${l.id}" data-i="${ri}" style="min-height:22px;padding:0 6px">frei</span></span>`).join('')}
         <span class="btn mini" data-a="rejclr" data-l="${l.id}">alle frei</span></div>`:''}
-      <div class="row" style="margin-top:9px"><div class="grow"></div><button class="btn mini bad" data-a="ldel" data-l="${l.id}">🗑 Bar löschen</button></div>
+      <div class="row" style="margin-top:9px"><div class="grow"></div><button class="btn mini bad" data-a="ldel" data-l="${l.id}">${ico('trash')}Bar löschen</button></div>
     </div>`).join('') || '<div class="mu sm">Keine Bars.</div>'}`);
 
   /* ── Schlücke ── */
   const b = lid ? barSips(lid) : {};
   const loc = lsv.find(x=>x.id===lid) || {};
-  h += sec('sips', '🥤 Schlücke eintragen', loc.name?esc(loc.name):'', `
+  h += sec('sips', 'glass', 'Schlücke eintragen', loc.name?esc(loc.name):'', `
     <div class="field"><span>Bar auswählen (jede, nicht nur die aktive)</span>
       <select data-a="sbar" data-k="sbar">${lsv.map(l=>`<option value="${l.id}" ${l.id===lid?'selected':''}>${num(l.order,0)}. ${esc(l.name||'(ohne Name)')} — ${(STAT[l.status]||STAT.pending)[0]}${l.drink?' · '+esc(l.drink):''}</option>`).join('')}</select></div>
     ${lid?`
@@ -781,16 +936,16 @@ function viewAdmin(){
         <div class="row"><div class="grow b">${esc(p.name||'(ohne Name)')}</div>
           <label class="chk"><input type="checkbox" data-a="ssk" data-l="${lid}" data-p="${p.id}" data-k="sk_${lid}_${p.id}" ${sk?'checked':''}> ausgesetzt</label></div>
         <div class="row" style="margin-top:6px">
-          <button class="btn sq" data-a="sm" data-l="${lid}" data-p="${p.id}" ${sk?'disabled':''}>−</button>
+          <button class="btn sq" data-a="sm" data-l="${lid}" data-p="${p.id}" title="weniger" ${sk?'disabled':''}>${ico('minus')}</button>
           <div class="stepper"><input type="number" inputmode="numeric" min="1" step="1" value="${sk?eff:val}" ${sk?'disabled':''} placeholder="–" data-a="sv" data-l="${lid}" data-p="${p.id}" data-k="sv_${lid}_${p.id}"></div>
-          <button class="btn sq pri" data-a="sp" data-l="${lid}" data-p="${p.id}" ${sk?'disabled':''}>＋</button>
+          <button class="btn sq pri" data-a="sp" data-l="${lid}" data-p="${p.id}" title="mehr" ${sk?'disabled':''}>${ico('plus')}</button>
           <div class="grow"></div>
           ${has?`<button class="btn mini bad" data-a="sdel" data-l="${lid}" data-p="${p.id}">Wert löschen</button>`:'<span class="xs mu">kein Wert</span>'}
         </div></div>`; }).join('') || '<div class="mu sm">Keine Teilnehmer.</div>'}`:'<div class="mu sm">Keine Bars.</div>'}`);
 
   /* ── Einstellungen ── */
   const ds = drinksAll();
-  h += sec('set', '🛠 Einstellungen & Getränke', '', `
+  h += sec('set', 'sliders', 'Einstellungen & Getränke', '', `
     <div class="field"><span>Event-Name</span><input type="text" value="${esc(S().eventName||'')}" data-a="setname" data-k="setname"></div>
     <div class="field"><span>Admin-Passwort</span><input type="text" value="${esc(S().password??'')}" data-a="setpw" data-k="setpw" autocomplete="off"></div>
     <div class="field"><span>Malus für „ausgesetzt" (Aufschlag auf den Bar-Ø)</span><input type="number" inputmode="numeric" value="${skipMalus()}" data-a="setmalus" data-k="setmalus"></div>
@@ -799,7 +954,7 @@ function viewAdmin(){
     <div class="field"><span>Bild (Aron)</span>
       <input type="text" value="${String(S().heroImage||'').startsWith('data:')?'':esc(S().heroImage||'')}" placeholder="Bild-URL oder leer für assets/aron.jpg" data-a="setimg" data-k="setimg">
       <div class="btnrow" style="margin-top:8px">
-        <label class="btn mini">📷 Foto hochladen<input type="file" accept="image/*" data-a="imgfile" style="display:none"></label>
+        <label class="btn mini">${ico('camera')}Foto hochladen<input type="file" accept="image/*" data-a="imgfile" style="display:none"></label>
         ${S().heroImage?`<button class="btn mini bad" data-a="imgclr">Bild entfernen</button>`:''}
       </div>
       <div class="hint" style="margin-top:6px">Upload wird verkleinert und in der DB gespeichert – erscheint auf allen Geräten.
@@ -809,21 +964,21 @@ function viewAdmin(){
     <div class="sep"></div>
     <div class="b" style="margin-bottom:8px">Getränke (${drinks().length})</div>
     <div class="row" style="margin-bottom:10px"><input type="text" data-k="newdrink" id="newdrink" placeholder="Neues Getränk" autocomplete="off">
-      <button class="btn pri sq" data-a="dadd">＋</button></div>
+      <button class="btn pri sq" data-a="dadd" title="Getränk anlegen">${ico('plus')}</button></div>
     ${ds.filter(d=>!d.deleted).map(d=>`<div class="row" style="margin-bottom:7px">
         <input type="text" class="grow" value="${esc(d.name)}" data-a="dname" data-i="${d.i}" data-k="dn_${d.i}">
-        <button class="btn sq bad" data-a="ddel" data-i="${d.i}">🗑</button></div>`).join('')}`);
+        <button class="btn sq bad" data-a="ddel" data-i="${d.i}" title="Getränk löschen">${ico('trash')}</button></div>`).join('')}`);
 
   /* ── Verlauf ── */
   const keys = Object.keys(L||{}).sort().reverse();
-  h += sec('log', '🕘 Verlauf', keys.length===1?'1 Eintrag':keys.length+' Einträge', `
+  h += sec('log', 'clock', 'Verlauf', keys.length===1?'1 Eintrag':keys.length+' Einträge', `
     <div class="hint" style="margin-bottom:8px">Jede Änderung mit altem und neuem Wert. Neueste oben. Bleibt auch nach „Alles zurücksetzen" erhalten.</div>
     ${keys.slice(0,ui.logMax).map(k=>{ const e = L[k]; const single = asArr(e.changes).length<=1;
       return `<div class="logline"><div class="row"><div class="grow">
         <span class="t">${dmy(e.ts)} ${hhmm(e.ts)}</span> – ${esc(e.label||e.type||'Änderung')}
         ${single?`: <span class="v from">${esc(fmtVal(e.from))}</span> → <span class="v to">${esc(fmtVal(e.to))}</span>`
                 :`<span class="xs mu"> (${asArr(e.changes).length} Felder)</span>`}
-        </div><button class="btn mini" data-a="logrev" data-key="${esc(k)}">↩︎</button></div>
+        </div><button class="btn mini" data-a="logrev" data-key="${esc(k)}" title="auf alten Wert zurücksetzen">${ico('undo')}</button></div>
         ${single?'':`<div class="xs mu">${asArr(e.changes).slice(0,6).map(c=>esc(c.path)+': '+esc(fmtVal(c.from))+' → '+esc(fmtVal(c.to))).join('<br>')}</div>`}
       </div>`; }).join('') || '<div class="mu sm">Noch keine Einträge.</div>'}
     ${keys.length>ui.logMax?`<button class="btn mini" data-a="logmore" style="margin-top:10px">Weitere anzeigen</button>`:''}`);
@@ -836,7 +991,7 @@ function viewAdmin(){
   const pn = Object.fromEntries(partsAll().map(p=>[p.id,p.name])), ln = Object.fromEntries(locsAll().map(l=>[l.id,l.name]));
   Object.entries(D.results||{}).filter(([,r])=>r&&r.deleted).forEach(([k,r]) => { const [li,pi] = k.split('_');
     trash.push({ label:'Schlücke '+(pn[pi]||pi)+' @ '+(ln[li]||li), info:'Wert damals: '+(r.skipped?'ausgesetzt':num(r.sips,'–')), ts:r.deletedAt, paths:{ ['results/'+k+'/deleted']:false, ['results/'+k+'/deletedAt']:null } }); });
-  h += sec('trash', '🗑 Papierkorb', trash.length===1?'1 Eintrag':trash.length+' Einträge', trash.length ? trash.map((t,i)=>`
+  h += sec('trash', 'trash', 'Papierkorb', trash.length===1?'1 Eintrag':trash.length+' Einträge', trash.length ? trash.map((t,i)=>`
       <div class="item"><div class="row"><div class="grow"><div class="b sm">${esc(t.label)}</div>
         <div class="xs mu">${esc(t.info)}${t.ts?' · gelöscht '+dmy(t.ts)+' '+hhmm(t.ts):''}</div></div>
         <button class="btn mini ok" data-a="restore" data-i="${i}">Wiederherstellen</button></div></div>`).join('')
@@ -872,14 +1027,14 @@ function viewAdmin(){
       : `<div class="mu sm">Startdaten und laufende Daten sind deckungsgleich.</div>
          <div class="btnrow" style="margin-top:10px"><button class="btn gho" data-a="seedclose">Schließen</button></div>`}
     </div>`;
-  h += sec('tools', '🧰 Werkzeuge', '', `
+  h += sec('tools', 'tools', 'Werkzeuge', '', `
     <div class="hint" style="margin-bottom:10px">Verbindung: <b>${store.mode==='firebase'?'Firebase live':'Demo-Modus (nur dieses Gerät)'}</b>${store.url?`<br><code style="word-break:break-all">${esc(store.url)}</code>`:''}${store.mode==='local'?'<br>Mit <code>?demo=1</code> im Link erzwungen bzw. keine Firebase-Config.':''}</div>
-    <button class="btn big" data-a="undo" ${lastKey?'':'disabled'}>↩︎ Letzte Änderung zurücknehmen${lastKey?`<span class="xs mu"> (${esc((L[lastKey].label||'').slice(0,26))})</span>`:''}</button>
+    <button class="btn big" data-a="undo" ${lastKey?'':'disabled'}>${ico('undo','lg')}Letzte Änderung zurücknehmen${lastKey?`<span class="xs mu"> (${esc((L[lastKey].label||'').slice(0,26))})</span>`:''}</button>
     <div class="spacer"></div><div class="btnrow">
-      <button class="btn" data-a="bcopy">📋 Backup kopieren</button>
-      <button class="btn" data-a="bpaste">📥 Backup einfügen</button></div>
+      <button class="btn" data-a="bcopy">${ico('copy')}Backup kopieren</button>
+      <button class="btn" data-a="bpaste">${ico('paste')}Backup einfügen</button></div>
     <div class="spacer"></div>
-    <button class="btn${openCnt?' pri':''}" data-a="seedsync">🔄 Startdaten abgleichen<span class="xs mu">${esc(badge)}</span></button>
+    <button class="btn${openCnt?' pri':''}" data-a="seedsync">${ico('refresh')}Startdaten abgleichen<span class="xs mu">${esc(badge)}</span></button>
     <div class="hint" style="margin-top:6px">${SEED_AUTO?'Neue Einträge und geänderte Namen/Adressen aus <code>index.html</code> übernimmt die App beim Öffnen von allein. Hier stehen nur die Fälle, die eine Entscheidung brauchen: Werte, die du im Admin selbst geändert hast, und Einträge, die aus den Startdaten geflogen sind.':'Der Auto-Abgleich ist über <code>SEED_AUTO</code> abgeschaltet – hier läuft alles per Haken.'} Schlücke, Ergebnisse, Status und Reihenfolge bleiben immer unangetastet, rückgängig über „Letzte Änderung zurücknehmen“.</div>
     ${seedBox}
     <div class="sep"></div>
@@ -896,8 +1051,8 @@ function viewAdmin(){
       <button class="btn bad big" data-a="wipelog">Auch Verlauf endgültig löschen</button></div>`);
   return h;
 }
-function sec(id, title, cnt, body){
-  return `<details class="sec" data-sec="${id}" ${ui.open[id]?'open':''}><summary>${title}${cnt?` <span class="cnt">${cnt}</span>`:''}</summary><div class="secbody">${body}</div></details>`;
+function sec(id, icon, title, cnt, body){
+  return `<details class="sec" data-sec="${id}" ${ui.open[id]?'open':''}><summary>${ico(icon)}${title}${cnt?` <span class="cnt">${cnt}</span>`:''}${ico('chev','chev')}</summary><div class="secbody">${body}</div></details>`;
 }
 
 /* ───────────────────────── Schreib-Aktionen ───────────────────────── */
@@ -953,29 +1108,36 @@ function drawWheel(){
   x.clearRect(0,0,size,size);
   x.save(); x.translate(R,R);
   if(!av.length){
-    x.beginPath(); x.arc(0,0,R-6,0,Math.PI*2); x.fillStyle='#1f232e'; x.fill();
-    x.strokeStyle='#2a2f3c'; x.lineWidth=3; x.stroke(); x.restore(); return;
+    x.beginPath(); x.arc(0,0,R-8,0,Math.PI*2); x.fillStyle='#151822'; x.fill();
+    x.strokeStyle='#272c38'; x.lineWidth=3; x.stroke(); x.restore(); return;
   }
   const n = av.length, seg = Math.PI*2/n;
   const fs = Math.max(9, Math.min(14, Math.round(150/n) + 3));
   for(let i=0;i<n;i++){
     const a0 = ui.angle + i*seg;
     x.beginPath(); x.moveTo(0,0); x.arc(0,0,R-6,a0,a0+seg); x.closePath();
-    x.fillStyle = `hsl(${Math.round((i*360/n + 22) % 360)} 58% ${i%2?34:26}%)`; x.fill();
-    x.strokeStyle = 'rgba(0,0,0,.35)'; x.lineWidth = 1; x.stroke();
+    /* Warmes Band statt Regenbogen: Farbton wandert von Rot-Orange nach Gold,
+       Helligkeit springt Segment für Segment, damit Nachbarn trennbar bleiben. */
+    x.fillStyle = `hsl(${Math.round(6 + (i/Math.max(1,n-1))*28)} ${i%2?66:54}% ${i%2?36:26}%)`; x.fill();
+    x.strokeStyle = 'rgba(8,9,14,.55)'; x.lineWidth = 1.5; x.stroke();
     const mid = a0 + seg/2;
     x.save(); x.rotate(mid);
-    x.fillStyle = '#fff'; x.textBaseline = 'middle';
+    x.fillStyle = '#fdf7f2'; x.textBaseline = 'middle';
+    x.shadowColor = 'rgba(0,0,0,.5)'; x.shadowBlur = 3; x.shadowOffsetY = 1;
     let t = av[i].name, f = fs, maxW = R - 36;
-    const F = () => x.font = `700 ${f}px -apple-system,system-ui,sans-serif`;
+    const F = () => x.font = `650 ${f}px Archivo,-apple-system,system-ui,sans-serif`;
     F(); while(x.measureText(t).width > maxW && f > 8){ f--; F(); }
     if(x.measureText(t).width > maxW){ while(t.length > 4 && x.measureText(t+'…').width > maxW) t = t.slice(0,-1); t += '…'; }
-    if(Math.cos(mid) < 0){ x.rotate(Math.PI); x.textAlign = 'left'; x.fillText(t, -(R-16), 0); }
-    else { x.textAlign = 'right'; x.fillText(t, R-16, 0); }
+    if(Math.cos(mid) < 0){ x.rotate(Math.PI); x.textAlign = 'left'; x.fillText(t, -(R-18), 0); }
+    else { x.textAlign = 'right'; x.fillText(t, R-18, 0); }
+    x.shadowBlur = 0; x.shadowOffsetY = 0;
     x.restore();
   }
-  x.beginPath(); x.arc(0,0,R-6,0,Math.PI*2); x.strokeStyle='#ff7a29'; x.lineWidth=4; x.stroke();
-  x.beginPath(); x.arc(0,0,20,0,Math.PI*2); x.fillStyle='#0d0f14'; x.fill(); x.strokeStyle='#ff7a29'; x.lineWidth=3; x.stroke();
+  x.beginPath(); x.arc(0,0,R-6,0,Math.PI*2); x.strokeStyle='rgba(8,9,14,.9)'; x.lineWidth=9; x.stroke();
+  x.beginPath(); x.arc(0,0,R-6,0,Math.PI*2); x.strokeStyle='#ff8a2b'; x.lineWidth=3; x.stroke();
+  x.beginPath(); x.arc(0,0,22,0,Math.PI*2); x.fillStyle='#0b0c11'; x.fill();
+  x.strokeStyle='#ff8a2b'; x.lineWidth=2.5; x.stroke();
+  x.beginPath(); x.arc(0,0,5,0,Math.PI*2); x.fillStyle='#ff8a2b'; x.fill();
   x.restore();
 }
 function spin(){

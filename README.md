@@ -97,6 +97,12 @@ Vier Tabs unten:
 auch in der laufenden DB – der Abgleich läuft von allein (siehe unten). Oder du
 legst Teilnehmer direkt im Admin-Tab an.
 
+**Aussehen:** Dunkle Oberfläche mit einer warmen Signalfarbe, Schriften
+Bricolage Grotesque und Archivo über Google Fonts, gezeichnete SVG-Icons statt
+Emoji. Die Regeln dazu stehen in `DESIGN.md`, das Produktwissen in `PRODUCT.md`
+(beides über die Impeccable-Skill angelegt). Ohne Netz fällt die App auf die
+System-Schrift zurück und bleibt bedienbar.
+
 **Passwort:** Standard `$$$`, steht in `settings.password` und ist im
 Admin-Tab änderbar (`DEFAULT_PW` oben in `index.html` greift nur bei einer noch
 leeren Datenbank). Auf dem Login-Screen steht es absichtlich **nicht** – sonst
