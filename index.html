@@ -358,7 +358,7 @@ const SEED_LOCATIONS = [
 ];
 const SEED_DRINKS = ['Bier 0,3','Weizen','Radler','Aperol Spritz','Gin Tonic','Wodka-Lemon','Whiskey-Cola','Jägermeister Shot','Tequila','Wein','Cocktail nach Wahl des Wirts','Alkoholfrei']
   .map(n => ({ key:'d-'+n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''), name:n }));
-const SEED_PARTICIPANTS = ['Dome'].map(n => ({ key:'p-'+n.toLowerCase(), name:n }));
+const SEED_PARTICIPANTS = ['Dome','Dennis','Raphi','Julian','Marvin','Hermann','Lennart'].map(n => ({ key:'p-'+n.toLowerCase(), name:n }));
 
 /* Abgleich beim Oeffnen der App: neue Eintraege und geaenderte Namen/Adressen
    wandern von allein in die DB. Angefasst wird nur, was seit dem letzten
