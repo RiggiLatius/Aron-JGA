@@ -341,32 +341,37 @@ async function revert(key, kind){
 }
 
 /* ───────────────────────── Startdaten ───────────────────────── */
+/* Jeder Startdaten-Eintrag hat einen festen `key`. Was daraus in der DB
+   entsteht, merkt sich diesen key im Feld `seed` – daran findet der
+   Abgleich seinen Eintrag spaeter wieder, auch nach einer Umbenennung.
+   Ein leeres Feld heisst "nichts vorgegeben" und wird nie uebertragen.  */
 const SEED_LOCATIONS = [
-  ['küblerGo 24/7',                   'Rotebühlstraße 69, 70178 Stuttgart'],
-  ['',                                ''],                                   /* 2. Asiate – Name/Adresse noch offen */
-  ['Mos Eisley',                      'Fritz-Elsas-Straße, Stuttgart'],
-  ['Paulaner am alten Postplatz',     'Calwer Str. 4, Stuttgart'],
-  ["WELLER'S Dinkelacker Stehausschank", 'Stuttgart'],
-  ['Marshall Matt',                   'Eberhardstraße 6 A, 70173 Stuttgart'],
-  ['Oblomow',                         'Torstraße 20, 70173 Stuttgart'],
-  ['Suessholz',                       'Wilhelmspl. 3, 70182 Stuttgart'],
-  ['La Concha',                       'Wilhelmspl. 5, 70182 Stuttgart']
+  { key:'kueblergo', name:'küblerGo 24/7',                       address:'Rotebühlstraße 69, 70178 Stuttgart' },
+  { key:'asiate',    name:'',                                    address:'' },   /* 2. Asiate – Name/Adresse noch offen */
+  { key:'moseisley', name:'Mos Eisley',                          address:'Fritz-Elsas-Straße, Stuttgart' },
+  { key:'paulaner',  name:'Paulaner am alten Postplatz',         address:'Calwer Str. 4, Stuttgart' },
+  { key:'wellers',   name:"WELLER'S Dinkelacker Stehausschank",  address:'Stuttgart' },
+  { key:'marshall',  name:'Marshall Matt',                       address:'Eberhardstraße 6 A, 70173 Stuttgart' },
+  { key:'oblomow',   name:'Oblomow',                             address:'Torstraße 20, 70173 Stuttgart' },
+  { key:'suessholz', name:'Suessholz',                           address:'Wilhelmspl. 3, 70182 Stuttgart' },
+  { key:'laconcha',  name:'La Concha',                           address:'Wilhelmspl. 5, 70182 Stuttgart' }
 ];
-const SEED_DRINKS = ['Bier 0,3','Weizen','Radler','Aperol Spritz','Gin Tonic','Wodka-Lemon','Whiskey-Cola','Jägermeister Shot','Tequila','Wein','Cocktail nach Wahl des Wirts','Alkoholfrei'];
-const SEED_PARTICIPANTS = ['Dome'];
+const SEED_DRINKS = ['Bier 0,3','Weizen','Radler','Aperol Spritz','Gin Tonic','Wodka-Lemon','Whiskey-Cola','Jägermeister Shot','Tequila','Wein','Cocktail nach Wahl des Wirts','Alkoholfrei']
+  .map(n => ({ key:'d-'+n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''), name:n }));
+const SEED_PARTICIPANTS = ['Dome'].map(n => ({ key:'p-'+n.toLowerCase(), name:n }));
 
 function seedPayload(){
   const locations = {}, participants = {};
   SEED_LOCATIONS.forEach((l,i) => {
-    locations['l'+(i+1)] = { name:l[0], address:l[1], order:i+1, status:'pending', drink:null, rejected:[], deleted:false };
+    locations['l'+(i+1)] = { name:l.name, address:l.address, order:i+1, status:'pending', drink:null, rejected:[], deleted:false, seed:l.key };
   });
-  SEED_PARTICIPANTS.forEach((n,i) => { participants['p'+(i+1)] = { name:n, deleted:false }; });
+  SEED_PARTICIPANTS.forEach((s,i) => { participants['p'+(i+1)] = { name:s.name, deleted:false, seed:s.key }; });
   return {
     settings:     { eventName:'Aron JGA', password:DEFAULT_PW, skipMalus:3, noRepeatDrinks:false, heroImage:'' },
     participants,
     locations,
     results:      {},
-    drinks:       SEED_DRINKS.map(n => ({ name:n, deleted:false }))
+    drinks:       SEED_DRINKS.map(d => ({ name:d.name, deleted:false, seed:d.key }))
   };
 }
 let seeded = false;
@@ -378,20 +383,78 @@ async function seedIfEmpty(){
            { type:'seed', label:'Startdaten angelegt' });
 }
 
-/* Was aus den Startdaten in der laufenden DB fehlt. Verglichen wird ueber
-   den Namen; auch Geloeschtes zaehlt als vorhanden, damit nichts
-   zurueckkommt, was jemand absichtlich weggeraeumt hat.                */
-function seedDiff(){
-  const key = s => String(s||'').trim().toLowerCase();
-  const hasP = new Set(partsAll().map(p => key(p.name)));
-  const hasL = new Set(locsAll().map(l => key(l.name)));
-  const hasD = new Set(drinksAll().map(d => key(d.name)));
-  return {
-    participants: SEED_PARTICIPANTS.filter(n => n && !hasP.has(key(n))),
-    locations:    SEED_LOCATIONS.filter(l => l[0] && !hasL.has(key(l[0]))),
-    drinks:       SEED_DRINKS.filter(n => n && !hasD.has(key(n)))
-  };
+/* ── Abgleich Code -> laufende DB ──────────────────────────────────────
+   Vergleicht die SEED_*-Listen mit dem, was in der DB steht, und macht
+   daraus eine Liste von Einzelposten. Jeder Posten ist einzeln anhakbar,
+   geschrieben wird nur das Angehakte. Ergebnisse, Schlücke, Status und
+   Reihenfolge fasst der Abgleich nie an – die Reihenfolge wird im
+   Admin-Tab gepflegt, nicht aus dem Code gesetzt.
+
+   Kategorien:
+     add   neu anlegen (kein Gegenstueck in der DB)
+     diff  Feld weicht ab (Code -> DB), mit beiden Werten im Vorschautext
+     gone  Eintrag stammt aus den Startdaten, steht dort aber nicht mehr
+     link  Zuordnung merken (Alt-Datensatz ohne `seed`, per Name erkannt) */
+function seedKinds(){
+  return [
+    { k:'participants', label:'Teilnehmer', path:'participants/', pre:'p',
+      seeds:SEED_PARTICIPANTS, live:partsAll(), fields:[['name','Name']],
+      make:s => ({ name:s.name, deleted:false, seed:s.key }) },
+    { k:'locations', label:'Bar', path:'locations/', pre:'l',
+      seeds:SEED_LOCATIONS, live:locsAll(), fields:[['name','Name'],['address','Adresse']],
+      make:(s,ord) => ({ name:s.name, address:s.address||'', order:ord, status:'pending', drink:null, rejected:[], deleted:false, seed:s.key }) },
+    { k:'drinks', label:'Getränk', path:'drinks/', pre:null,
+      seeds:SEED_DRINKS, live:drinksAll(), fields:[['name','Name']],
+      make:s => ({ name:s.name, deleted:false, seed:s.key }) }
+  ];
 }
+function seedPlan(){
+  const norm = v => String(v==null?'':v).trim().toLowerCase();
+  const items = [], taken = new Set();
+  const uniq = pre => { let id; do { id = nid(pre); } while(taken.has(id)); taken.add(id); return id; };
+  let ord = Math.max(0, ...locsAll().map(l=>num(l.order,0))), ix = nextDrinkIx();
+
+  seedKinds().forEach(K => {
+    const byKey = {}, used = new Set();
+    K.live.forEach(e => { if(e.seed) byKey[e.seed] = e; });
+    K.seeds.forEach((s,i) => {
+      let e = byKey[s.key], link = false;
+      if(!e && norm(s.name)){                       /* noch nie abgeglichen -> ueber den Namen */
+        e = K.live.find(x => !x.seed && !used.has(x.id) && norm(x.name)===norm(s.name));
+        link = !!e;
+      }
+      if(!e && !norm(s.name) && K.k==='locations'){ /* Platzhalter ohne Namen: ueber die Position */
+        const c = K.live[i]; if(c && !c.seed && !used.has(c.id)){ e = c; link = true; }
+      }
+      if(!e){
+        const id = K.k==='drinks' ? String(ix++) : uniq(K.pre);
+        items.push({ id:K.k+'|'+s.key+'|neu', cat:'add', kind:K.label, label:s.name||'(ohne Name)',
+                     paths:{ [K.path+id]: K.make(s, ++ord) } });
+        return;
+      }
+      used.add(e.id);
+      if(link) items.push({ id:K.k+'|'+s.key+'|link', cat:'link', kind:K.label, label:e.name||'(ohne Name)',
+                            paths:{ [K.path+e.id+'/seed']: s.key } });
+      K.fields.forEach(([f,fl]) => {
+        const code = String(s[f] ?? ''), live = String(e[f] ?? '');
+        if(!code || code===live) return;            /* leer im Code = keine Vorgabe */
+        const stamp = e.seed ? {} : { [K.path+e.id+'/seed']: s.key };
+        items.push({ id:K.k+'|'+s.key+'|'+f, cat:'diff', kind:K.label,
+                     label:(e.name||s.name||'(ohne Name)')+' · '+fl, from:live, to:code,
+                     paths:{ [K.path+e.id+'/'+f]: code, ...stamp } });
+      });
+    });
+    const keys = new Set(K.seeds.map(s=>s.key));
+    K.live.forEach(e => {
+      if(!e.seed || keys.has(e.seed) || e.deleted) return;
+      items.push({ id:K.k+'|'+e.seed+'|weg', cat:'gone', kind:K.label, label:e.name||'(ohne Name)',
+                   paths:{ [K.path+e.id+'/deleted']:true, [K.path+e.id+'/deletedAt']:now() } });
+    });
+  });
+  return items;
+}
+const SEED_CAT = { add:true, diff:true, gone:false, link:true };   /* Vorauswahl der Haken */
+const seedPicked = it => (ui.seedSel && ui.seedSel[it.id] !== undefined) ? !!ui.seedSel[it.id] : SEED_CAT[it.cat];
 
 /* ───────────────────────── Abgeleitete Daten ───────────────────────── */
 const S = () => D.settings || {};
@@ -404,7 +467,7 @@ const locs     = () => locsAll().filter(l=>!l.deleted);
    Zahlen-Keys machen. Deshalb immer mit den echten Keys arbeiten.      */
 const drinksAll= () => (Array.isArray(D.drinks) ? D.drinks.map((d,i)=>[String(i),d]) : Object.entries(D.drinks||{}))
                        .filter(([,d]) => d && typeof d==='object')
-                       .map(([k,d]) => ({ i:k, name:d.name||'', deleted:!!d.deleted }))
+                       .map(([k,d]) => ({ ...d, i:k, id:k, name:d.name||'', deleted:!!d.deleted }))
                        .sort((a,b) => num(a.i,0)-num(b.i,0));
 const nextDrinkIx = () => Math.max(-1, ...drinksAll().map(d=>num(d.i,-1))) + 1;
 const drinks   = () => drinksAll().filter(d=>d.name && !d.deleted);
@@ -467,7 +530,8 @@ function heroBroke(ev){                               /* markiert genau die Quel
 }
 
 /* ───────────────────────── UI-Zustand ───────────────────────── */
-const ui = { tab:'rank', sipsBar:null, wheelLoc:null, spinning:false, angle:0, result:null, open:{}, pwWrong:false, logMax:60 };
+const ui = { tab:'rank', sipsBar:null, wheelLoc:null, spinning:false, angle:0, result:null, open:{}, pwWrong:false, logMax:60,
+             seedOpen:false, seedSel:{} };
 let admin = false;
 const ADMIN_KEY = 'aron-jga-admin';
 function checkAdmin(){ const pw = localStorage.getItem(ADMIN_KEY); admin = !!pw && pw === String(S().password ?? DEFAULT_PW); return admin; }
@@ -737,7 +801,30 @@ function viewAdmin(){
 
   /* ── Werkzeuge ── */
   const lastKey = keys[0];
-  const sd = seedDiff(), seedCount = sd.participants.length + sd.locations.length + sd.drinks.length;
+  const plan = seedPlan();
+  const openCnt = plan.filter(i => i.cat!=='link').length, linkCnt = plan.length - openCnt;
+  const badge = openCnt ? ' ('+openCnt+' offen)' : (linkCnt ? ' ('+linkCnt+' zu verknüpfen)' : '');
+  const grp = (cat, title, hint) => { const rows = plan.filter(i=>i.cat===cat); if(!rows.length) return '';
+    return `<div class="b sm" style="margin:10px 0 4px">${esc(title)} <span class="xs mu">(${rows.length})</span></div>
+      <div class="hint" style="margin-bottom:6px">${esc(hint)}</div>` + rows.map(i => `
+      <label class="item row" style="gap:8px;align-items:flex-start">
+        <input type="checkbox" data-a="seedpick" data-k="${esc(i.id)}" ${seedPicked(i)?'checked':''}>
+        <span class="grow"><span class="xs mu">${esc(i.kind)}:</span> <b class="sm">${esc(i.label)}</b>
+        ${i.cat==='diff'?`<div class="xs mu"><span class="v from">${esc(i.from||'(leer)')}</span> → <span class="v to">${esc(i.to)}</span></div>`:''}</span>
+      </label>`).join(''); };
+  const seedBox = !ui.seedOpen ? '' : `
+    <div class="item" style="margin-top:8px">
+      ${plan.length ? `
+        ${grp('add','Neu anlegen','Steht in den Startdaten, fehlt hier.')}
+        ${grp('diff','Geändert','Im Code steht etwas anderes als hier. Links der jetzige Wert, rechts der aus den Startdaten.')}
+        ${grp('gone','Nicht mehr in den Startdaten','Kam mal aus den Startdaten, steht dort aber nicht mehr. Haken = ab in den Papierkorb.')}
+        ${grp('link','Zuordnung merken','Vor dem Abgleich angelegt und am Namen wiedererkannt. Einmal merken, dann greifen auch spätere Umbenennungen.')}
+        <div class="btnrow" style="margin-top:10px">
+          <button class="btn pri" data-a="seedapply">Ausgewähltes übernehmen</button>
+          <button class="btn gho" data-a="seedclose">Schließen</button></div>`
+      : `<div class="mu sm">Startdaten und laufende Daten sind deckungsgleich.</div>
+         <div class="btnrow" style="margin-top:10px"><button class="btn gho" data-a="seedclose">Schließen</button></div>`}
+    </div>`;
   h += sec('tools', '🧰 Werkzeuge', '', `
     <div class="hint" style="margin-bottom:10px">Verbindung: <b>${store.mode==='firebase'?'Firebase live':'Demo-Modus (nur dieses Gerät)'}</b>${store.url?`<br><code style="word-break:break-all">${esc(store.url)}</code>`:''}${store.mode==='local'?'<br>Mit <code>?demo=1</code> im Link erzwungen bzw. keine Firebase-Config.':''}</div>
     <button class="btn big" data-a="undo" ${lastKey?'':'disabled'}>↩︎ Letzte Änderung zurücknehmen${lastKey?`<span class="xs mu"> (${esc((L[lastKey].label||'').slice(0,26))})</span>`:''}</button>
@@ -745,8 +832,9 @@ function viewAdmin(){
       <button class="btn" data-a="bcopy">📋 Backup kopieren</button>
       <button class="btn" data-a="bpaste">📥 Backup einfügen</button></div>
     <div class="spacer"></div>
-    <button class="btn" data-a="seedsync">🔄 Startdaten abgleichen${seedCount?`<span class="xs mu"> (${seedCount} fehlen)</span>`:''}</button>
-    <div class="hint" style="margin-top:6px">Trägt Teilnehmer, Bars und Getränke aus den Startdaten nach, die hier noch fehlen. Vorhandenes bleibt unangetastet, Gelöschtes kommt nicht zurück. Rückgängig über „Letzte Änderung zurücknehmen“.</div>
+    <button class="btn${openCnt?' pri':''}" data-a="seedsync">🔄 Startdaten abgleichen<span class="xs mu">${esc(badge)}</span></button>
+    <div class="hint" style="margin-top:6px">Vergleicht die Listen oben in <code>index.html</code> mit den Daten hier: neue Einträge, geänderte Namen und Adressen, und was aus den Startdaten verschwunden ist. Du siehst erst die Liste und hakst an, was übernommen wird. Schlücke, Ergebnisse, Status und Reihenfolge bleiben unangetastet, rückgängig über „Letzte Änderung zurücknehmen“.</div>
+    ${seedBox}
     <div class="sep"></div>
     <div class="b">Roh-JSON-Editor (Notausgang)</div>
     <div class="hint" style="margin:4px 0 8px">Kompletter State unter <code>/${ROOT}/data</code>. Wird beim Speichern geprüft und komplett protokolliert.</div>
@@ -864,7 +952,7 @@ function spin(){
 /* Aktionen, die schreiben -> nur im Admin-Modus erlaubt. Alles andere
    (Tab-Wechsel, Rad drehen, Login, Backup kopieren) darf jeder.        */
 const CLICK_WRITE = ['padd','pdel','ladd','ldel','lstat','ldrinkclr','lup','ldown','rejfree','rejclr',
-  'sm','sp','sdel','dadd','ddel','accept','reject','imgclr','logrev','restore','undo','bpaste','jsave','seedsync','reset','wipelog'];
+  'sm','sp','sdel','dadd','ddel','accept','reject','imgclr','logrev','restore','undo','bpaste','jsave','seedapply','reset','wipelog'];
 const CHANGE_WRITE = ['manual','pname','lname','laddr','ldrink','ssk','sv','dname',
   'setname','setpw','setmalus','setnorep','setimg','imgfile'];
 
@@ -980,22 +1068,19 @@ document.addEventListener('click', async e => {
       if(!confirm('State ersetzen? Alter Stand bleibt im Verlauf.')) return;
       await applyState(parsed); ui.jsonDraft = null; toast('JSON gespeichert'); render(); break; }
     case 'jreset': ui.jsonDraft = null; render(); break;
-    case 'seedsync': {
-      const d = seedDiff(), n = d.participants.length + d.locations.length + d.drinks.length;
-      if(!n){ toast('Startdaten sind schon vollständig'); return; }
-      const list = [ d.participants.length?'Teilnehmer: '+d.participants.join(', '):'',
-                     d.locations.length?'Bars: '+d.locations.map(l=>l[0]).join(', '):'',
-                     d.drinks.length?'Getränke: '+d.drinks.join(', '):'' ].filter(Boolean).join('\n');
-      if(!confirm('Fehlende Startdaten nachtragen?\n\n'+list+'\n\nVorhandenes bleibt unverändert.')) return;
-      const ch = {}, used = new Set();
-      const uid = pre => { let id; do { id = nid(pre); } while(used.has(id)); used.add(id); return id; };
-      let mx = Math.max(0, ...locsAll().map(l=>num(l.order,0))), ix = nextDrinkIx();
-      d.participants.forEach(nm => { ch['participants/'+uid('p')] = { name:nm, deleted:false }; });
-      d.locations.forEach(l => { ch['locations/'+uid('l')] =
-        { name:l[0], address:l[1]||'', order:++mx, status:'pending', drink:null, rejected:[], deleted:false }; });
-      d.drinks.forEach(nm => { ch['drinks/'+(ix++)] = { name:nm, deleted:false }; });
-      await tx(ch, { type:'seed-sync', label:'Startdaten nachgetragen: '+n+' Einträge' });
-      toast(n+(n===1?' Eintrag':' Einträge')+' nachgetragen'); break; }
+    case 'seedsync': ui.seedOpen = !ui.seedOpen; ui.seedSel = {}; ui.open.tools = true; render(); break;
+    case 'seedclose': ui.seedOpen = false; ui.seedSel = {}; render(); break;
+    case 'seedapply': {
+      const pick = seedPlan().filter(seedPicked);
+      if(!pick.length){ toast('Nichts angehakt'); return; }
+      const cnt = c => pick.filter(i=>i.cat===c).length;
+      const summe = [ cnt('add')?cnt('add')+'x neu':'', cnt('diff')?cnt('diff')+'x geändert':'',
+                      cnt('gone')?cnt('gone')+'x in den Papierkorb':'', cnt('link')?cnt('link')+'x verknüpft':'' ]
+                    .filter(Boolean).join(', ');
+      if(!confirm('Startdaten übernehmen?\n\n'+summe+'\n\nSchlücke und Ergebnisse bleiben unangetastet.')) return;
+      const ch = {}; pick.forEach(i => Object.assign(ch, i.paths));
+      await tx(ch, { type:'seed-sync', label:'Startdaten abgeglichen: '+summe });
+      ui.seedOpen = false; ui.seedSel = {}; toast('Übernommen: '+summe); break; }
     case 'reset': {
       if(!confirm('ALLES zurücksetzen?\n\nTeilnehmer, Bars, Ergebnisse und Getränke werden geleert. Der Verlauf bleibt.')) return;
       if(!confirm('Sicher? Zweite Bestätigung.\nDer Abend bleibt über den Verlauf nachlesbar und rekonstruierbar.')) return;
@@ -1012,11 +1097,12 @@ document.addEventListener('click', async e => {
 document.addEventListener('change', async e => {
   const el = e.target.closest('[data-a]'); if(!el) return;
   const a = el.dataset.a, lid = el.dataset.l, pid = el.dataset.p, i = el.dataset.i, val = el.value;
-  if(a==='wloc' || a==='sbar'){ /* nur Ansicht, auch ohne Admin */ }
+  if(a==='wloc' || a==='sbar' || a==='seedpick'){ /* nur Ansicht, auch ohne Admin */ }
   else if(!CHANGE_WRITE.includes(a)) return;              /* z.B. Passwortfeld: nichts zu tun */
   else if(!admin){ toast('Nur im Admin-Modus'); return; }
   try{
   switch(a){
+    case 'seedpick': ui.seedSel[el.dataset.k] = el.checked; break;
     case 'wloc':  ui.wheelLoc = val; ui.result = null; render(); break;
     case 'sbar':  ui.sipsBar = val; render(); break;
     case 'manual': if(!val) return; if(!admin){ toast('Nur im Admin-Modus'); return; }

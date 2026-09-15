@@ -93,9 +93,10 @@ Vier Tabs unten:
 | **Admin** | Nach Passwort. Alles Weitere. |
 
 **Teilnehmer:** In `SEED_PARTICIPANTS` oben in `index.html` steht die Startliste
-(aktuell nur `Dome`). Sie greift automatisch nur bei einer leeren Datenbank.
-Läuft die App schon, holt **Admin → Werkzeuge → „Startdaten abgleichen"** die
-fehlenden Namen nach – oder du legst sie direkt im Admin-Tab an.
+(aktuell nur `Dome`). Automatisch greift sie nur bei einer leeren Datenbank –
+in eine schon gepflegte DB holst du Änderungen jederzeit über
+**Admin → Werkzeuge → „Startdaten abgleichen"** (siehe unten). Oder du legst
+Teilnehmer direkt im Admin-Tab an.
 
 **Passwort:** Standard `$$$`, steht in `settings.password` und ist im
 Admin-Tab änderbar (`DEFAULT_PW` oben in `index.html` greift nur bei einer noch
@@ -133,12 +134,30 @@ dort nicht mit.
 * **Backup kopieren / einfügen:** kompletter State als JSON in die Zwischenablage
   und zurück.
 * **Roh-JSON-Editor** als Notausgang, mit Prüfung vor dem Speichern.
-* **„Startdaten abgleichen":** trägt die Einträge aus `SEED_PARTICIPANTS`,
-  `SEED_LOCATIONS` und `SEED_DRINKS` nach, die in der laufenden DB fehlen. Der
-  Button zeigt vorab, wie viele das sind, und fragt mit Namen nach. Verglichen
-  wird über den Namen (Groß-/Kleinschreibung egal); Vorhandenes wird nicht
-  angefasst und Gelöschtes aus dem Papierkorb kommt nicht zurück. Alles landet
-  als **ein** Log-Eintrag, ist also mit einem ↩︎ wieder weg.
+* **„Startdaten abgleichen":** bringt Änderungen an `SEED_PARTICIPANTS`,
+  `SEED_LOCATIONS` und `SEED_DRINKS` jederzeit in die laufende DB – auch wenn
+  dort längst Schlücke drinstehen. Der Button zeigt, wie viele Posten offen
+  sind; der Klick öffnet die Liste, jeder Posten einzeln anhakbar:
+  * **Neu anlegen** – steht im Code, fehlt in der DB.
+  * **Geändert** – Name oder Adresse weichen ab, mit beiden Werten
+    nebeneinander (`jetzt → laut Startdaten`).
+  * **Nicht mehr in den Startdaten** – Eintrag kam aus dem Code, steht dort
+    nicht mehr. Standardmäßig **nicht** angehakt; Haken heißt ab in den
+    Papierkorb.
+  * **Zuordnung merken** – für Datensätze, die vor diesem Feature entstanden
+    sind. Sie werden am Namen wiedererkannt und bekommen ihren `seed`-Key.
+
+  Geschrieben wird nur das Angehakte, und zwar als **ein** Log-Eintrag – ein ↩︎
+  nimmt den kompletten Abgleich zurück. Nie angefasst werden Schlücke,
+  Ergebnisse, Bar-Status, gewürfeltes Getränk und die Reihenfolge; die pflegst
+  du im Admin. Ein leeres Feld im Code heißt „keine Vorgabe" und überschreibt
+  nichts. Was du nur in der DB angelegt hast, taucht im Abgleich gar nicht auf.
+
+**Wie die Zuordnung hält:** Jeder Startdaten-Eintrag hat einen festen `key`
+(z.B. `moseisley`), der angelegte Datensatz merkt ihn sich im Feld `seed`.
+Deshalb erkennt der Abgleich seine Einträge auch nach einer Umbenennung wieder –
+auf beiden Seiten. Umbenennen im Code heißt also „umbenennen", nicht „neu
+anlegen". Für einen neuen Eintrag einfach eine Zeile mit neuem `key` ergänzen.
 * **„Alles zurücksetzen"** (doppelte Bestätigung) leert `participants`,
   `locations`, `results` und `drinks`, **lässt `/aron-jga/log` unangetastet**.
   Der Abend ist danach über das Protokoll noch komplett nachlesbar und über ↩︎
