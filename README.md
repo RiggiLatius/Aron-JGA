@@ -93,10 +93,9 @@ Vier Tabs unten:
 | **Admin** | Nach Passwort. Alles Weitere. |
 
 **Teilnehmer:** In `SEED_PARTICIPANTS` oben in `index.html` steht die Startliste
-(aktuell nur `Dome`). Automatisch greift sie nur bei einer leeren Datenbank –
-in eine schon gepflegte DB holst du Änderungen jederzeit über
-**Admin → Werkzeuge → „Startdaten abgleichen"** (siehe unten). Oder du legst
-Teilnehmer direkt im Admin-Tab an.
+(aktuell nur `Dome`). Wer dort dazukommt, ist nach dem nächsten Öffnen der App
+auch in der laufenden DB – der Abgleich läuft von allein (siehe unten). Oder du
+legst Teilnehmer direkt im Admin-Tab an.
 
 **Passwort:** Standard `$$$`, steht in `settings.password` und ist im
 Admin-Tab änderbar (`DEFAULT_PW` oben in `index.html` greift nur bei einer noch
@@ -134,30 +133,36 @@ dort nicht mit.
 * **Backup kopieren / einfügen:** kompletter State als JSON in die Zwischenablage
   und zurück.
 * **Roh-JSON-Editor** als Notausgang, mit Prüfung vor dem Speichern.
-* **„Startdaten abgleichen":** bringt Änderungen an `SEED_PARTICIPANTS`,
-  `SEED_LOCATIONS` und `SEED_DRINKS` jederzeit in die laufende DB – auch wenn
-  dort längst Schlücke drinstehen. Der Button zeigt, wie viele Posten offen
-  sind; der Klick öffnet die Liste, jeder Posten einzeln anhakbar:
-  * **Neu anlegen** – steht im Code, fehlt in der DB.
-  * **Geändert** – Name oder Adresse weichen ab, mit beiden Werten
-    nebeneinander (`jetzt → laut Startdaten`).
-  * **Nicht mehr in den Startdaten** – Eintrag kam aus dem Code, steht dort
-    nicht mehr. Standardmäßig **nicht** angehakt; Haken heißt ab in den
-    Papierkorb.
-  * **Zuordnung merken** – für Datensätze, die vor diesem Feature entstanden
-    sind. Sie werden am Namen wiedererkannt und bekommen ihren `seed`-Key.
+* **Startdaten-Abgleich:** Änderungen an `SEED_PARTICIPANTS`, `SEED_LOCATIONS`
+  und `SEED_DRINKS` landen **beim nächsten Öffnen der App von allein** in der
+  laufenden DB – auch wenn dort längst Schlücke drinstehen. Push, Seite neu
+  laden, fertig. Automatisch laufen nur die unstrittigen Fälle:
+  * **neue Einträge** anlegen,
+  * **geänderte Namen und Adressen** nachziehen, sofern der Wert in der DB seit
+    dem letzten Abgleich nicht von Hand geändert wurde.
 
-  Geschrieben wird nur das Angehakte, und zwar als **ein** Log-Eintrag – ein ↩︎
-  nimmt den kompletten Abgleich zurück. Nie angefasst werden Schlücke,
-  Ergebnisse, Bar-Status, gewürfeltes Getränk und die Reihenfolge; die pflegst
-  du im Admin. Ein leeres Feld im Code heißt „keine Vorgabe" und überschreibt
-  nichts. Was du nur in der DB angelegt hast, taucht im Abgleich gar nicht auf.
+  Alles andere wartet unter **Admin → Werkzeuge → „Startdaten abgleichen"** auf
+  eine Entscheidung; der Knopf zeigt, wie viel ansteht:
+  * **Hier von Hand geändert** – im Code steht etwas anderes als in der DB, aber
+    den DB-Wert hat jemand im Admin gesetzt. Bleibt, bis du den Haken setzt;
+    beide Werte stehen nebeneinander (`jetzt → laut Startdaten`).
+  * **Nicht mehr in den Startdaten** – Eintrag kam aus dem Code, steht dort
+    nicht mehr. Haken heißt ab in den Papierkorb, standardmäßig ohne Haken.
+
+  Nie angefasst werden Schlücke, Ergebnisse, Bar-Status, gewürfeltes Getränk und
+  die Reihenfolge; die pflegst du im Admin. Ein leeres Feld im Code heißt „keine
+  Vorgabe" und überschreibt nichts. Was du nur in der DB angelegt hast, taucht im
+  Abgleich gar nicht auf. Jeder Abgleich ist **ein** Log-Eintrag – ein ↩︎ nimmt
+  ihn komplett zurück. Mit `SEED_AUTO = false` oben in `index.html` passiert gar
+  nichts mehr ohne Knopfdruck.
 
 **Wie die Zuordnung hält:** Jeder Startdaten-Eintrag hat einen festen `key`
-(z.B. `moseisley`), der angelegte Datensatz merkt ihn sich im Feld `seed`.
-Deshalb erkennt der Abgleich seine Einträge auch nach einer Umbenennung wieder –
-auf beiden Seiten. Umbenennen im Code heißt also „umbenennen", nicht „neu
-anlegen". Für einen neuen Eintrag einfach eine Zeile mit neuem `key` ergänzen.
+(z.B. `moseisley`), der angelegte Datensatz merkt ihn sich im Feld `seed` und in
+`seedSnap`, was zuletzt aus dem Code kam. Aus dem Dreieck Code / `seedSnap` / DB
+fällt heraus, wer sich bewegt hat: weicht die DB vom Merkzettel ab, war es
+jemand im Admin – dann fasst der Abgleich den Wert nicht an. Umbenennen im Code
+heißt deshalb „umbenennen", nicht „neu anlegen"; für einen neuen Eintrag einfach
+eine Zeile mit neuem `key` ergänzen.
 * **„Alles zurücksetzen"** (doppelte Bestätigung) leert `participants`,
   `locations`, `results` und `drinks`, **lässt `/aron-jga/log` unangetastet**.
   Der Abend ist danach über das Protokoll noch komplett nachlesbar und über ↩︎

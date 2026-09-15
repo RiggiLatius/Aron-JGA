@@ -360,18 +360,26 @@ const SEED_DRINKS = ['Bier 0,3','Weizen','Radler','Aperol Spritz','Gin Tonic','W
   .map(n => ({ key:'d-'+n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''), name:n }));
 const SEED_PARTICIPANTS = ['Dome'].map(n => ({ key:'p-'+n.toLowerCase(), name:n }));
 
+/* Abgleich beim Oeffnen der App: neue Eintraege und geaenderte Namen/Adressen
+   wandern von allein in die DB. Angefasst wird nur, was seit dem letzten
+   Abgleich unveraendert ist – wer im Admin etwas umbenannt hat, behaelt es;
+   solche Faelle und Streichungen bleiben im Werkzeuge-Tab zum Anhaken.
+   Auf false setzen -> gar nichts passiert ohne Knopfdruck.               */
+const SEED_AUTO = true;
+
 function seedPayload(){
   const locations = {}, participants = {};
   SEED_LOCATIONS.forEach((l,i) => {
-    locations['l'+(i+1)] = { name:l.name, address:l.address, order:i+1, status:'pending', drink:null, rejected:[], deleted:false, seed:l.key };
+    locations['l'+(i+1)] = { name:l.name, address:l.address, order:i+1, status:'pending', drink:null, rejected:[], deleted:false,
+                             seed:l.key, seedSnap:{ name:l.name, address:l.address } };
   });
-  SEED_PARTICIPANTS.forEach((s,i) => { participants['p'+(i+1)] = { name:s.name, deleted:false, seed:s.key }; });
+  SEED_PARTICIPANTS.forEach((s,i) => { participants['p'+(i+1)] = { name:s.name, deleted:false, seed:s.key, seedSnap:{ name:s.name } }; });
   return {
     settings:     { eventName:'Aron JGA', password:DEFAULT_PW, skipMalus:3, noRepeatDrinks:false, heroImage:'' },
     participants,
     locations,
     results:      {},
-    drinks:       SEED_DRINKS.map(d => ({ name:d.name, deleted:false, seed:d.key }))
+    drinks:       SEED_DRINKS.map(d => ({ name:d.name, deleted:false, seed:d.key, seedSnap:{ name:d.name } }))
   };
 }
 let seeded = false;
@@ -391,21 +399,30 @@ async function seedIfEmpty(){
    Admin-Tab gepflegt, nicht aus dem Code gesetzt.
 
    Kategorien:
-     add   neu anlegen (kein Gegenstueck in der DB)
-     diff  Feld weicht ab (Code -> DB), mit beiden Werten im Vorschautext
-     gone  Eintrag stammt aus den Startdaten, steht dort aber nicht mehr
-     link  Zuordnung merken (Alt-Datensatz ohne `seed`, per Name erkannt) */
+     add    neu anlegen (kein Gegenstueck in der DB)
+     diff   Feld weicht ab und wurde hier seit dem letzten Abgleich nicht
+            angefasst -> laeuft automatisch mit
+     conf   Feld weicht ab, aber der Wert wurde im Admin geaendert -> bleibt,
+            bis jemand den Haken setzt
+     gone   Eintrag stammt aus den Startdaten, steht dort aber nicht mehr
+     link   Zuordnung merken (Alt-Datensatz ohne `seed`, per Name erkannt)
+     snap   nur den Merkzettel `seedSnap` nachziehen, aendert nichts Sichtbares
+
+   `seedSnap` haelt fest, was der Abgleich zuletzt geschrieben hat. Aus dem
+   Dreieck Code / seedSnap / DB faellt heraus, wer sich bewegt hat: weicht die
+   DB vom Merkzettel ab, war es jemand im Admin – dann Finger weg.         */
 function seedKinds(){
   return [
     { k:'participants', label:'Teilnehmer', path:'participants/', pre:'p',
       seeds:SEED_PARTICIPANTS, live:partsAll(), fields:[['name','Name']],
-      make:s => ({ name:s.name, deleted:false, seed:s.key }) },
+      make:s => ({ name:s.name, deleted:false, seed:s.key, seedSnap:{ name:s.name } }) },
     { k:'locations', label:'Bar', path:'locations/', pre:'l',
       seeds:SEED_LOCATIONS, live:locsAll(), fields:[['name','Name'],['address','Adresse']],
-      make:(s,ord) => ({ name:s.name, address:s.address||'', order:ord, status:'pending', drink:null, rejected:[], deleted:false, seed:s.key }) },
+      make:(s,ord) => ({ name:s.name, address:s.address||'', order:ord, status:'pending', drink:null, rejected:[], deleted:false,
+                         seed:s.key, seedSnap:{ name:s.name, address:s.address||'' } }) },
     { k:'drinks', label:'Getränk', path:'drinks/', pre:null,
       seeds:SEED_DRINKS, live:drinksAll(), fields:[['name','Name']],
-      make:s => ({ name:s.name, deleted:false, seed:s.key }) }
+      make:s => ({ name:s.name, deleted:false, seed:s.key, seedSnap:{ name:s.name } }) }
   ];
 }
 function seedPlan(){
@@ -435,13 +452,21 @@ function seedPlan(){
       used.add(e.id);
       if(link) items.push({ id:K.k+'|'+s.key+'|link', cat:'link', kind:K.label, label:e.name||'(ohne Name)',
                             paths:{ [K.path+e.id+'/seed']: s.key } });
+      const snap = (e.seedSnap && typeof e.seedSnap==='object') ? e.seedSnap : null;
       K.fields.forEach(([f,fl]) => {
         const code = String(s[f] ?? ''), live = String(e[f] ?? '');
-        if(!code || code===live) return;            /* leer im Code = keine Vorgabe */
+        if(!code) return;                           /* leer im Code = keine Vorgabe */
+        const seen = snap && snap[f]!==undefined ? String(snap[f]) : null;
         const stamp = e.seed ? {} : { [K.path+e.id+'/seed']: s.key };
-        items.push({ id:K.k+'|'+s.key+'|'+f, cat:'diff', kind:K.label,
+        if(code === live){                          /* deckungsgleich – nur den Merkzettel pflegen */
+          if(seen !== code) items.push({ id:K.k+'|'+s.key+'|'+f+'|snap', cat:'snap', kind:K.label,
+            label:(e.name||'(ohne Name)')+' · '+fl, paths:{ [K.path+e.id+'/seedSnap/'+f]: code, ...stamp } });
+          return;
+        }
+        const touched = seen === null || seen !== live;   /* im Admin angefasst? */
+        items.push({ id:K.k+'|'+s.key+'|'+f, cat:touched?'conf':'diff', kind:K.label,
                      label:(e.name||s.name||'(ohne Name)')+' · '+fl, from:live, to:code,
-                     paths:{ [K.path+e.id+'/'+f]: code, ...stamp } });
+                     paths:{ [K.path+e.id+'/'+f]: code, [K.path+e.id+'/seedSnap/'+f]: code, ...stamp } });
       });
     });
     const keys = new Set(K.seeds.map(s=>s.key));
@@ -453,8 +478,27 @@ function seedPlan(){
   });
   return items;
 }
-const SEED_CAT = { add:true, diff:true, gone:false, link:true };   /* Vorauswahl der Haken */
+const SEED_CAT = { add:true, diff:true, conf:false, gone:false, link:true, snap:true };  /* Vorauswahl der Haken */
 const seedPicked = it => (ui.seedSel && ui.seedSel[it.id] !== undefined) ? !!ui.seedSel[it.id] : SEED_CAT[it.cat];
+const SEED_SELF = ['add','diff','link','snap'];        /* was ohne Nachfrage laufen darf */
+
+/* Laeuft bei jedem Datenstand einmal durch. Schlaegt der Schreibversuch fehl
+   (z.B. DB-Regeln), wird es nicht endlos wiederholt.                       */
+let seedBusy = false, seedOff = false;
+async function seedAutoSync(){
+  if(!SEED_AUTO || seedBusy || seedOff || !D || !D.settings) return;
+  const pick = seedPlan().filter(i => SEED_SELF.includes(i.cat));
+  if(!pick.length) return;
+  const ch = {}; pick.forEach(i => Object.assign(ch, i.paths));
+  const neu = pick.filter(i=>i.cat==='add').length, ged = pick.filter(i=>i.cat==='diff').length;
+  const summe = [ neu?neu+'x neu':'', ged?ged+'x geändert':'' ].filter(Boolean).join(', ');
+  seedBusy = true;
+  try {
+    await tx(ch, { type:'seed-auto', label:'Startdaten übernommen'+(summe?': '+summe:' (Zuordnung)') });
+    if(summe && admin) toast('Startdaten übernommen: '+summe);
+  } catch(err){ seedOff = true; }
+  finally { seedBusy = false; }
+}
 
 /* ───────────────────────── Abgeleitete Daten ───────────────────────── */
 const S = () => D.settings || {};
@@ -802,23 +846,26 @@ function viewAdmin(){
   /* ── Werkzeuge ── */
   const lastKey = keys[0];
   const plan = seedPlan();
-  const openCnt = plan.filter(i => i.cat!=='link').length, linkCnt = plan.length - openCnt;
-  const badge = openCnt ? ' ('+openCnt+' offen)' : (linkCnt ? ' ('+linkCnt+' zu verknüpfen)' : '');
+  const openCnt = plan.filter(i => i.cat==='conf' || i.cat==='gone').length;     /* braucht eine Entscheidung */
+  const selfCnt = plan.length - openCnt;                                          /* erledigt der Auto-Lauf */
+  const badge = openCnt ? ' ('+openCnt+' zu entscheiden)' : (selfCnt ? ' ('+selfCnt+' offen)' : '');
   const grp = (cat, title, hint) => { const rows = plan.filter(i=>i.cat===cat); if(!rows.length) return '';
     return `<div class="b sm" style="margin:10px 0 4px">${esc(title)} <span class="xs mu">(${rows.length})</span></div>
       <div class="hint" style="margin-bottom:6px">${esc(hint)}</div>` + rows.map(i => `
       <label class="item row" style="gap:8px;align-items:flex-start">
         <input type="checkbox" data-a="seedpick" data-k="${esc(i.id)}" ${seedPicked(i)?'checked':''}>
         <span class="grow"><span class="xs mu">${esc(i.kind)}:</span> <b class="sm">${esc(i.label)}</b>
-        ${i.cat==='diff'?`<div class="xs mu"><span class="v from">${esc(i.from||'(leer)')}</span> → <span class="v to">${esc(i.to)}</span></div>`:''}</span>
+        ${i.from!==undefined||i.to!==undefined?`<div class="xs mu"><span class="v from">${esc(i.from||'(leer)')}</span> → <span class="v to">${esc(i.to||'(leer)')}</span></div>`:''}</span>
       </label>`).join(''); };
   const seedBox = !ui.seedOpen ? '' : `
     <div class="item" style="margin-top:8px">
       ${plan.length ? `
+        ${grp('conf','Hier von Hand geändert','Der Wert wurde im Admin geändert, im Code steht etwas anderes. Bleibt so, bis du den Haken setzt.')}
+        ${grp('gone','Nicht mehr in den Startdaten','Kam mal aus den Startdaten, steht dort aber nicht mehr. Haken = ab in den Papierkorb.')}
         ${grp('add','Neu anlegen','Steht in den Startdaten, fehlt hier.')}
         ${grp('diff','Geändert','Im Code steht etwas anderes als hier. Links der jetzige Wert, rechts der aus den Startdaten.')}
-        ${grp('gone','Nicht mehr in den Startdaten','Kam mal aus den Startdaten, steht dort aber nicht mehr. Haken = ab in den Papierkorb.')}
         ${grp('link','Zuordnung merken','Vor dem Abgleich angelegt und am Namen wiedererkannt. Einmal merken, dann greifen auch spätere Umbenennungen.')}
+        ${grp('snap','Merkzettel nachziehen','Ändert nichts Sichtbares – hält nur fest, was zuletzt aus den Startdaten kam.')}
         <div class="btnrow" style="margin-top:10px">
           <button class="btn pri" data-a="seedapply">Ausgewähltes übernehmen</button>
           <button class="btn gho" data-a="seedclose">Schließen</button></div>`
@@ -833,7 +880,7 @@ function viewAdmin(){
       <button class="btn" data-a="bpaste">📥 Backup einfügen</button></div>
     <div class="spacer"></div>
     <button class="btn${openCnt?' pri':''}" data-a="seedsync">🔄 Startdaten abgleichen<span class="xs mu">${esc(badge)}</span></button>
-    <div class="hint" style="margin-top:6px">Vergleicht die Listen oben in <code>index.html</code> mit den Daten hier: neue Einträge, geänderte Namen und Adressen, und was aus den Startdaten verschwunden ist. Du siehst erst die Liste und hakst an, was übernommen wird. Schlücke, Ergebnisse, Status und Reihenfolge bleiben unangetastet, rückgängig über „Letzte Änderung zurücknehmen“.</div>
+    <div class="hint" style="margin-top:6px">${SEED_AUTO?'Neue Einträge und geänderte Namen/Adressen aus <code>index.html</code> übernimmt die App beim Öffnen von allein. Hier stehen nur die Fälle, die eine Entscheidung brauchen: Werte, die du im Admin selbst geändert hast, und Einträge, die aus den Startdaten geflogen sind.':'Der Auto-Abgleich ist über <code>SEED_AUTO</code> abgeschaltet – hier läuft alles per Haken.'} Schlücke, Ergebnisse, Status und Reihenfolge bleiben immer unangetastet, rückgängig über „Letzte Änderung zurücknehmen“.</div>
     ${seedBox}
     <div class="sep"></div>
     <div class="b">Roh-JSON-Editor (Notausgang)</div>
@@ -1158,6 +1205,7 @@ addEventListener('resize', () => { if(ui.tab==='wheel' && !ui.spinning) drawWhee
     L = (snap && snap.log)  || {};
     checkAdmin();
     seedIfEmpty();
+    seedAutoSync();
     render();
   });
 })();
