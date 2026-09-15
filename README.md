@@ -92,6 +92,10 @@ Vier Tabs unten:
 | **Rad** | Glücksrad aus der Getränkeliste, ~3 s Animation. Danach **Passt** oder **Gibt's hier nicht** (sperrt das Getränk für diese Bar, neuer Dreh). Darunter „Getränk manuell wählen" als Fallback. |
 | **Admin** | Nach Passwort. Alles Weitere. |
 
+**Teilnehmer:** In `SEED_PARTICIPANTS` oben in `index.html` steht die Startliste
+(aktuell nur `Dome`). Sie greift nur bei einer leeren Datenbank; danach werden
+Teilnehmer im Admin-Tab angelegt.
+
 **Passwort:** Standard `$$$`, steht in `settings.password` und ist im
 Admin-Tab änderbar (`DEFAULT_PW` oben in `index.html` greift nur bei einer noch
 leeren Datenbank). Auf dem Login-Screen steht es absichtlich **nicht** – sonst

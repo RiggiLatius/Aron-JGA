@@ -353,15 +353,17 @@ const SEED_LOCATIONS = [
   ['La Concha',                       'Wilhelmspl. 5, 70182 Stuttgart']
 ];
 const SEED_DRINKS = ['Bier 0,3','Weizen','Radler','Aperol Spritz','Gin Tonic','Wodka-Lemon','Whiskey-Cola','Jägermeister Shot','Tequila','Wein','Cocktail nach Wahl des Wirts','Alkoholfrei'];
+const SEED_PARTICIPANTS = ['Dome'];
 
 function seedPayload(){
-  const locations = {};
+  const locations = {}, participants = {};
   SEED_LOCATIONS.forEach((l,i) => {
     locations['l'+(i+1)] = { name:l[0], address:l[1], order:i+1, status:'pending', drink:null, rejected:[], deleted:false };
   });
+  SEED_PARTICIPANTS.forEach((n,i) => { participants['p'+(i+1)] = { name:n, deleted:false }; });
   return {
     settings:     { eventName:'Aron JGA', password:DEFAULT_PW, skipMalus:3, noRepeatDrinks:false, heroImage:'' },
-    participants: {},
+    participants,
     locations,
     results:      {},
     drinks:       SEED_DRINKS.map(n => ({ name:n, deleted:false }))
