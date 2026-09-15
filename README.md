@@ -92,7 +92,7 @@ Vier Tabs unten:
 | **Rad** | Glücksrad aus der Getränkeliste, ~3 s Animation. Danach **Passt** oder **Gibt's hier nicht** (sperrt das Getränk für diese Bar, neuer Dreh). Darunter „Getränk manuell wählen" als Fallback. |
 | **Admin** | Nach Passwort. Alles Weitere. |
 
-**Passwort:** Standard `Ehemann Möse`, steht in `settings.password` und ist im
+**Passwort:** Standard `$$$`, steht in `settings.password` und ist im
 Admin-Tab änderbar (`DEFAULT_PW` oben in `index.html` greift nur bei einer noch
 leeren Datenbank). Auf dem Login-Screen steht es absichtlich **nicht** – sonst
 könnte es jeder in der Gruppe ablesen. Nach der Eingabe wird es im `localStorage` des Geräts
@@ -146,7 +146,7 @@ dort nicht mit.
 {
   settings: {
     eventName: "Aron JGA",
-    password: "Ehemann Möse",
+    password: "$$$",
     skipMalus: 3,           // Aufschlag auf den Bar-Durchschnitt bei "ausgesetzt"
     noRepeatDrinks: false,  // Getränke bar-übergreifend nicht wiederholen
     heroImage: ""           // Bild-URL oder data:-URI, leer = assets/aron.jpg
