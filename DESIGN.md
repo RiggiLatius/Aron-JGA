@@ -3,11 +3,31 @@ name: Aron JGA
 description: Dunkle Bar-Tour-App fürs Handy – Rangliste, Tour, Glücksrad
 colors:
   bg: "#0b0c11"
+  bg2: "#0f1118"
   surface: "#151822"
+  surface2: "#1d2130"
+  surface3: "#272c3c"
+  line: "#262b38"
+  line2: "#333a4c"
+  text: "#f4f6fa"
+  text2: "#a9b2c2"
+  text3: "#727c8e"
   accent: "#ff8a2b"
+  accentHover: "#ffa45c"
+  onAccent: "#200d00"
   gold: "#ffc93c"
+  silver: "#c6d0e2"
+  bronze: "#d9884e"
   ok: "#35d6a0"
   bad: "#ff5c7a"
+  onLight: "#101219"
+  onSilver: "#1b1f27"
+  onBronze: "#2a1405"
+  heroCaption: "#d9dfea"
+  onBad: "#ffc7d1"
+  onAccentSurface: "#ffdcc0"
+  wheelLabel: "#fdf7f2"
+  shadow: "#000000"
 ---
 
 # Design System: Aron JGA
@@ -66,6 +86,14 @@ Führung.
 als Nächstes dran ist. Zwei bernsteinfarbene Flächen nebeneinander heißt, eine
 davon ist falsch.
 
+### Gebundene Textfarben
+
+Text auf farbigen Flächen wird aus deren Farbton getönt, nie grau: `#ffc7d1` auf
+Rot, `#ffdcc0` auf Bernstein, `#d9dfea` über dem Foto im Hero, `#101219` auf der
+hellen Toast-Fläche, `#1b1f27` und `#2a1405` auf Silber und Bronze der
+Positionsmarken, `#fdf7f2` auf den Rad-Segmenten. Höhe entsteht über Schwarz mit
+Versatz und Weichzeichnung (`rgba(0,0,0,…)`), nie über farbige Schatten.
+
 **Keine Glut.** Farbige Schatten ohne Versatz sind verboten. Höhe entsteht über
 neutrale Schatten mit Versatz und Weichzeichnung, Ringe über echte Ränder.
 
@@ -88,6 +116,15 @@ Oberflächen sehen damit gleich aus.
 - **Body** (Archivo 450, 16px, 1.45): Fließtext, Hinweise auf max. 62ch.
 - **Label** (Archivo 650, 11–12px, `.08em`, Versalien): Einheiten, Status,
   Augenbrauen-Zeilen.
+
+## Rad
+
+Jede Scheibe bekommt einen eigenen Farbton, gleichmäßig um den Farbkreis verteilt
+(Start 22°). Die Helligkeit ist nicht gesetzt, sondern berechnet: Zu jedem
+Farbton wird die hellste Stufe gesucht, die gegenüber der Beschriftung noch den
+Zielkontrast hält – im Wechsel 8:1 und 5:1, damit Nachbarn auseinanderfallen.
+Ohne das wären gelbe Felder unlesbar und blaue fast schwarz. Kranz, Nabe und
+Nadel bleiben bernsteinfarben, damit das Rad zum Rest der App gehört.
 
 ## Icons
 

@@ -97,7 +97,7 @@ main{padding:16px 16px 28px;max-width:660px;margin:0 auto}
   radial-gradient(120% 120% at 20% 0,rgba(255,138,43,.35),transparent 60%),var(--surf-2)}
 .hero.noimg .ic{width:46px;height:46px;color:var(--ac);stroke-width:1.4}
 .hero .cap{position:absolute;inset:auto 0 0 0;padding:52px 18px 16px;
-  background:linear-gradient(transparent,rgba(6,7,10,.55) 42%,rgba(6,7,10,.93))}
+  background:linear-gradient(transparent,rgba(0,0,0,.55) 42%,rgba(0,0,0,.93))}
 .hero .cap .t{font-family:var(--fd);font-size:clamp(26px,7vw,34px);font-weight:800;letter-spacing:-.035em;line-height:1}
 .hero .cap .s{margin-top:5px;font-size:13.5px;color:#d9dfea;font-weight:500}
 /* ═══ Buttons ═══ */
@@ -220,7 +220,7 @@ details.sec>summary .cnt{font-size:12px;color:var(--tx-3);font-weight:600;letter
 .warn{background:var(--bad-dim);border:1px solid var(--bad-line);color:#ffc7d1;border-radius:var(--r-m);padding:13px;font-size:13.5px}
 .note{display:flex;gap:10px;background:var(--ac-dim);border:1px solid var(--ac-line);color:#ffdcc0;border-radius:var(--r-m);padding:13px;font-size:13.5px}
 .note .ic{color:var(--ac);margin-top:1px}
-.note b{color:#fff}
+.note b{color:var(--tx)}
 .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 /* ═══ Tableiste ═══ */
 nav.tabs{
@@ -1097,6 +1097,33 @@ function shrinkImage(file, cb){
 }
 
 /* ───────────────────────── Glücksrad ───────────────────────── */
+/* Farbe der Rad-Segmente: Der Farbton kommt aus der Position, die Helligkeit
+   aus dem gewünschten Kontrast zur Beschriftung. Gelb wirkt viel heller als
+   Blau – mit fester Helligkeit wäre die weiße Schrift mal knallig, mal
+   unlesbar. Deshalb wird pro Farbton die hellste Stufe gesucht, die den
+   Zielkontrast noch hält, per Intervallhalbierung. Zwei Zielwerte im Wechsel
+   halten benachbarte Felder auseinander.                                     */
+const WHEEL_TXT = '#fdf7f2';
+const relLum = (r,g,b) => { const f = v => { v/=255; return v<=.03928 ? v/12.92 : Math.pow((v+.055)/1.055,2.4); };
+  return .2126*f(r) + .7152*f(g) + .0722*f(b); };
+const hsl2rgb = (h,s,l) => { s/=100; l/=100;
+  const k = n => (n + h/30) % 12, a = s*Math.min(l,1-l);
+  const f = n => l - a*Math.max(-1, Math.min(k(n)-3, 9-k(n), 1));
+  return [f(0)*255, f(8)*255, f(4)*255]; };
+const LUM_TXT = relLum(253,247,242);
+const segCache = {};
+function segLight(hue, sat, target){
+  const key = hue+'|'+sat+'|'+target;
+  if(segCache[key] !== undefined) return segCache[key];
+  let lo = 6, hi = 62;                       /* lo hält den Kontrast, hi ist schon zu hell */
+  for(let i=0;i<16;i++){
+    const mid = (lo+hi)/2;
+    const c = (LUM_TXT + .05) / (relLum(...hsl2rgb(hue,sat,mid)) + .05);
+    if(c > target) lo = mid; else hi = mid;
+  }
+  return segCache[key] = Math.round(lo*10)/10;
+}
+
 function drawWheel(){
   const c = document.getElementById('wheel'); if(!c) return;
   const size = Math.max(220, Math.min(360, window.innerWidth - 46));
@@ -1116,9 +1143,9 @@ function drawWheel(){
   for(let i=0;i<n;i++){
     const a0 = ui.angle + i*seg;
     x.beginPath(); x.moveTo(0,0); x.arc(0,0,R-6,a0,a0+seg); x.closePath();
-    /* Warmes Band statt Regenbogen: Farbton wandert von Rot-Orange nach Gold,
-       Helligkeit springt Segment für Segment, damit Nachbarn trennbar bleiben. */
-    x.fillStyle = `hsl(${Math.round(6 + (i/Math.max(1,n-1))*28)} ${i%2?66:54}% ${i%2?36:26}%)`; x.fill();
+    /* Jede Scheibe eine eigene Farbe, einmal rund um den Farbkreis. */
+    const hue = Math.round((i*360/n + 22) % 360), sat = i%2 ? 64 : 72;
+    x.fillStyle = `hsl(${hue} ${sat}% ${segLight(hue, sat, i%2 ? 5 : 8)}%)`; x.fill();
     x.strokeStyle = 'rgba(8,9,14,.55)'; x.lineWidth = 1.5; x.stroke();
     const mid = a0 + seg/2;
     x.save(); x.rotate(mid);
