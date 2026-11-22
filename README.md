@@ -89,7 +89,7 @@ Vier Tabs unten:
 |---|---|
 | **Rangliste** | Standard-Ansicht für alle. Aufsteigend nach Gesamtschlücken, Platz 1–3 hervorgehoben, dazu Getränke-Anzahl, Ø und pro erledigter Bar der Bar-Sieger. |
 | **Tour** | Alle Bars mit Status, Adresse als Google-Maps-Link, aktuelles Getränk groß. Antippen springt direkt in die Nachbearbeitung dieser Bar. |
-| **Rad** | Glücksrad aus der Getränkeliste, ~3 s Animation. Danach **Passt** oder **Gibt's hier nicht** (sperrt das Getränk für diese Bar, neuer Dreh). Darunter „Getränk manuell wählen" als Fallback. |
+| **Rad** | Glücksrad aus der Getränkeliste: Die Scheibe steht, nur die Nadel in der Mitte dreht (~3 s). Danach **Passt** oder **Gibt's hier nicht** (sperrt das Getränk für diese Bar, neuer Dreh). Darunter „Getränk manuell wählen" als Fallback. |
 | **Admin** | Nach Passwort. Alles Weitere. |
 
 **Teilnehmer:** In `SEED_PARTICIPANTS` oben in `index.html` steht die Startliste

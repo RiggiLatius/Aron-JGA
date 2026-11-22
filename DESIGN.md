@@ -126,6 +126,14 @@ Zielkontrast hält – im Wechsel 8:1 und 5:1, damit Nachbarn auseinanderfallen.
 Ohne das wären gelbe Felder unlesbar und blaue fast schwarz. Kranz, Nabe und
 Nadel bleiben bernsteinfarben, damit das Rad zum Rest der App gehört.
 
+Die Scheibe steht still, gedreht wird nur die Nadel in der Mitte. So bleiben
+die Namen auch während des Drehs lesbar. Die Nadel reicht bis 40 % des Radius,
+die Beschriftung beginnt erst dahinter: Die Nadel verdeckt nie den Namen, auf
+den sie zeigt. Lange Namen brechen an Leerzeichen oder nach dem Bindestrich um,
+bevor sie kleiner werden. Die Nadel bleibt irgendwo in der Scheibe stehen, nie
+auf einer Kante. Danach treten die übrigen Scheiben dunkel zurück, bis neu
+gedreht wird.
+
 ## Icons
 
 Eigene Strich-Icons als `<symbol>`-Sprite oben in der Seite, 24er-Raster,
@@ -138,7 +146,8 @@ Ein inszenierter Moment: Beim Tabwechsel steigen die Blöcke der Ansicht
 gestaffelt auf (12px, leichter Weichzeichner, `cubic-bezier(.16,1,.3,1)`,
 Versatz 40ms). Nicht bei jedem Datenstand – sonst zappelt die Seite, während
 jemand Schlücke einträgt. Knöpfe sinken beim Drücken auf 0.975. Der
-Live-Punkt im Kopf pulsiert. `prefers-reduced-motion` schaltet alles ab.
+Live-Punkt im Kopf pulsiert. `prefers-reduced-motion` schaltet alles ab; die
+Nadel dreht dann nur eine kurze Runde statt gut drei Sekunden.
 
 ## Browser-Oberflächen
 

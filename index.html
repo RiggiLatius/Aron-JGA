@@ -187,11 +187,16 @@ label.chk input{width:22px;height:22px;min-height:0;accent-color:var(--ac)}
 .chip.win{border-color:rgba(255,201,60,.4);background:rgba(255,201,60,.1);color:var(--gold)}
 .chip.win b{color:var(--gold)}
 /* ═══ Rad ═══ */
-.wheelwrap{display:grid;place-items:center;position:relative;margin:6px 0 14px;padding:10px 0}
-canvas#wheel{max-width:100%;height:auto;touch-action:manipulation;
+.wheelwrap{display:grid;place-items:center;margin:6px 0 14px;padding:10px 0}
+.wheel{position:relative;line-height:0}
+canvas#wheel{display:block;max-width:100%;height:auto;touch-action:manipulation;
   filter:drop-shadow(0 16px 36px rgba(0,0,0,.6))}
-.needle{position:absolute;top:2px;left:50%;transform:translateX(-50%);z-index:2;color:var(--ac);
-  filter:drop-shadow(0 3px 5px rgba(0,0,0,.6))}
+/* Die Scheibe steht, nur die Nadel dreht. Der Schatten sitzt am festen <svg>,
+   gedreht wird die Gruppe darin – so fällt er immer nach unten. */
+.needle{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;color:var(--ac);
+  filter:drop-shadow(0 3px 4px rgba(0,0,0,.6))}
+.needle .hub{fill:var(--bg);stroke:currentColor;stroke-width:1.5}
+.needle .pin{fill:var(--bg)}
 .result{display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--fd);font-size:clamp(24px,6.5vw,30px);
   font-weight:800;letter-spacing:-.03em;text-align:center;line-height:1.15;color:var(--ac-h);margin:4px 0 12px;min-height:1.3em}
 .result .ic{width:26px;height:26px;color:var(--ac);stroke-width:1.6}
@@ -845,9 +850,15 @@ function viewWheel(){
       <select data-a="wloc" data-k="wloc">${ls.map(l=>`<option value="${l.id}" ${l.id===lid?'selected':''}>${num(l.order,0)}. ${esc(l.name||'(ohne Name)')} — ${(STAT[l.status]||STAT.pending)[0]}</option>`).join('')}</select>
     </div></div>`;
   if(loc.drink) h += `<div class="note" style="margin-bottom:12px">Aktuell eingetragen: <b>${esc(loc.drink)}</b>${admin?' – neu drehen oder unten manuell ändern.':''}</div>`;
-  h += `<div class="wheelwrap">
-      <svg class="needle" width="26" height="22" viewBox="0 0 26 22" aria-hidden="true"><path d="M13 22 2.6 2.4A2 2 0 0 1 4.4 0h17.2a2 2 0 0 1 1.8 2.4L13 22Z" fill="currentColor"/></svg>
-      <canvas id="wheel" width="340" height="340"></canvas></div>`;
+  h += `<div class="wheelwrap"><div class="wheel">
+      <canvas id="wheel" width="340" height="340"></canvas>
+      <svg class="needle" viewBox="-100 -100 200 200" aria-hidden="true">
+        <circle class="hub" r="12.5"/>
+        <g id="needle" transform="rotate(${needleDeg()})"${av.length ? '' : ' visibility="hidden"'}>
+          <path d="M0-${NEEDLE_LEN}L3.6-1.5 1.9 13.4Q0 16.2-1.9 13.4L-3.6-1.5Z" fill="currentColor" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+        </g>
+        <circle class="pin" r="2.3"/>
+      </svg></div></div>`;
   h += `<div class="result">${ui.result ? ico('glass')+esc(ui.result) : (av.length? '' : 'Keine Getränke übrig')}</div>`;
   if(!av.length){
     h += `<div class="warn">Für diese Bar sind alle Getränke ausgeschlossen (abgelehnt oder schon getrunken). Im Admin-Tab freigeben oder Getränke ergänzen.</div>`;
@@ -1124,6 +1135,39 @@ function segLight(hue, sat, target){
   return segCache[key] = Math.round(lo*10)/10;
 }
 
+/* Die Scheibe steht still, gedreht wird nur die Nadel in der Mitte.
+   ui.angle ist der Winkel der Nadel: 0 = nach oben, im Uhrzeigersinn.
+   Scheibe 0 liegt mittig oben, Scheibe i also bei i*seg.
+   Die Nadel reicht bis NEEDLE_LEN % des Radius, die Beschriftung beginnt
+   knapp dahinter – so verdeckt die Nadel nie den Namen, auf den sie zeigt. */
+const NEEDLE_LEN = 40;
+const needleDeg = () => +(ui.angle*180/Math.PI).toFixed(2);
+const WHEEL_FONT = f => `650 ${f}px Archivo,-apple-system,system-ui,sans-serif`;
+
+/* Beschriftung einer Scheibe: erst einzeilig, dann zweizeilig, dann kleiner,
+   zuletzt gekürzt. Passt heißt: nicht länger als der Ring und am inneren
+   Ende noch so viel Platz zur Nachbarscheibe, dass sich nichts überlappt. */
+function wheelLabel(x, name, f0, maxW, rOut, seg){
+  const room = r => seg >= Math.PI ? r : r*Math.sin(seg/2) - 1.5;
+  const widest = ls => Math.max(...ls.map(l => x.measureText(l).width));
+  const fits = (ls, f) => { x.font = WHEEL_FONT(f); const w = widest(ls);
+    return w <= maxW && room(rOut - w) >= f*.56*ls.length; };
+  const splits = [];                               /* Umbruch an Leerzeichen oder nach Bindestrich */
+  for(let i=1;i<name.length-1;i++){
+    if(name[i]===' ') splits.push([name.slice(0,i), name.slice(i+1)]);
+    else if(name[i]==='-') splits.push([name.slice(0,i+1), name.slice(i+1)]);
+  }
+  const two = f => { x.font = WHEEL_FONT(f);
+    return splits.slice().sort((p,q) => widest(p) - widest(q)).find(ls => fits(ls, f)); };
+  for(let f=f0; f>=12; f--) if(fits([name], f)) return { f, ls:[name] };
+  for(let f=f0; f>=9;  f--){ const ls = two(f); if(ls) return { f, ls }; }
+  for(let f=11; f>=8;  f--) if(fits([name], f)) return { f, ls:[name] };
+  { const ls = two(8); if(ls) return { f:8, ls }; }
+  let t = name; x.font = WHEEL_FONT(8);
+  while(t.length > 4 && !fits([t+'…'], 8)) t = t.slice(0,-1);
+  return { f:8, ls:[t+'…'] };
+}
+
 function drawWheel(){
   const c = document.getElementById('wheel'); if(!c) return;
   const size = Math.max(220, Math.min(360, window.innerWidth - 46));
@@ -1138,50 +1182,59 @@ function drawWheel(){
     x.beginPath(); x.arc(0,0,R-8,0,Math.PI*2); x.fillStyle='#151822'; x.fill();
     x.strokeStyle='#272c38'; x.lineWidth=3; x.stroke(); x.restore(); return;
   }
-  const n = av.length, seg = Math.PI*2/n;
+  const n = av.length, seg = Math.PI*2/n, off = -Math.PI/2 - seg/2;
   const fs = Math.max(9, Math.min(14, Math.round(150/n) + 3));
+  const rOut = R - 17, rIn = R*(NEEDLE_LEN + 7)/100;
+  /* Nach dem Dreh treten die anderen Scheiben zurück. */
+  const hit = !ui.spinning && ui.result ? av.findIndex(d => d.name === ui.result) : -1;
   for(let i=0;i<n;i++){
-    const a0 = ui.angle + i*seg;
+    const a0 = off + i*seg;
     x.beginPath(); x.moveTo(0,0); x.arc(0,0,R-6,a0,a0+seg); x.closePath();
     /* Jede Scheibe eine eigene Farbe, einmal rund um den Farbkreis. */
     const hue = Math.round((i*360/n + 22) % 360), sat = i%2 ? 64 : 72;
     x.fillStyle = `hsl(${hue} ${sat}% ${segLight(hue, sat, i%2 ? 5 : 8)}%)`; x.fill();
     x.strokeStyle = 'rgba(8,9,14,.55)'; x.lineWidth = 1.5; x.stroke();
-    const mid = a0 + seg/2;
+    const mid = a0 + seg/2, lab = wheelLabel(x, av[i].name, fs, rOut - rIn, rOut, seg);
     x.save(); x.rotate(mid);
-    x.fillStyle = '#fdf7f2'; x.textBaseline = 'middle';
+    x.font = WHEEL_FONT(lab.f); x.fillStyle = WHEEL_TXT; x.textBaseline = 'middle';
     x.shadowColor = 'rgba(0,0,0,.5)'; x.shadowBlur = 3; x.shadowOffsetY = 1;
-    let t = av[i].name, f = fs, maxW = R - 36;
-    const F = () => x.font = `650 ${f}px Archivo,-apple-system,system-ui,sans-serif`;
-    F(); while(x.measureText(t).width > maxW && f > 8){ f--; F(); }
-    if(x.measureText(t).width > maxW){ while(t.length > 4 && x.measureText(t+'…').width > maxW) t = t.slice(0,-1); t += '…'; }
-    if(Math.cos(mid) < 0){ x.rotate(Math.PI); x.textAlign = 'left'; x.fillText(t, -(R-18), 0); }
-    else { x.textAlign = 'right'; x.fillText(t, R-18, 0); }
-    x.shadowBlur = 0; x.shadowOffsetY = 0;
+    const lh = lab.f*1.08, y0 = -(lab.ls.length-1)*lh/2;
+    const flip = Math.cos(mid) < 0;                  /* linke Hälfte nicht kopfüber */
+    if(flip){ x.rotate(Math.PI); x.textAlign = 'left'; }
+    else x.textAlign = 'right';
+    lab.ls.forEach((l,k) => x.fillText(l, flip ? -rOut : rOut, y0 + k*lh));
     x.restore();
+    if(hit >= 0 && i !== hit){
+      x.beginPath(); x.moveTo(0,0); x.arc(0,0,R-6,a0,a0+seg); x.closePath();
+      x.fillStyle = 'rgba(11,12,17,.62)'; x.fill();
+    }
   }
   x.beginPath(); x.arc(0,0,R-6,0,Math.PI*2); x.strokeStyle='rgba(8,9,14,.9)'; x.lineWidth=9; x.stroke();
   x.beginPath(); x.arc(0,0,R-6,0,Math.PI*2); x.strokeStyle='#ff8a2b'; x.lineWidth=3; x.stroke();
-  x.beginPath(); x.arc(0,0,22,0,Math.PI*2); x.fillStyle='#0b0c11'; x.fill();
-  x.strokeStyle='#ff8a2b'; x.lineWidth=2.5; x.stroke();
-  x.beginPath(); x.arc(0,0,5,0,Math.PI*2); x.fillStyle='#ff8a2b'; x.fill();
   x.restore();
 }
 function spin(){
   const av = availableDrinks(ui.wheelLoc);
   if(!av.length){ toast('Keine Getränke übrig'); return; }
-  const t = Math.floor(Math.random()*av.length), seg = Math.PI*2/av.length;
-  let end = -Math.PI/2 - t*seg - seg/2;
-  while(end < ui.angle + Math.PI*2*4) end += Math.PI*2;
-  const from = ui.angle, dur = 3000, t0 = performance.now();
+  const n = av.length, seg = Math.PI*2/n, t = Math.floor(Math.random()*n);
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* Die Nadel bleibt irgendwo in der Scheibe stehen, nicht immer genau
+     mittig, aber nie auf der Kante. */
+  const from = ui.angle % (Math.PI*2);
+  let end = t*seg + (Math.random()-.5)*seg*.7;
+  while(end < from + Math.PI*2*(calm ? 1 : 4)) end += Math.PI*2;
+  const dur = calm ? 700 : 3400, t0 = performance.now();
   ui.spinning = true; ui.result = null;
   const rEl = document.querySelector('.result'); if(rEl) rEl.textContent = '';
   document.querySelectorAll('[data-a="spin"],[data-a="accept"],[data-a="reject"]').forEach(b => b.disabled = true);
+  drawWheel();                                       /* Abdunklung vom letzten Dreh weg */
   requestAnimationFrame(function step(ts){
-    const p = Math.min(1, (ts-t0)/dur), e = 1 - Math.pow(1-p, 3);
-    ui.angle = from + (end-from)*e; drawWheel();
+    const p = Math.min(1, (ts-t0)/dur), e = 1 - Math.pow(1-p, 4);
+    ui.angle = from + (end-from)*e;
+    const nd = document.getElementById('needle');
+    if(nd) nd.setAttribute('transform', `rotate(${needleDeg()})`);
     if(p < 1) requestAnimationFrame(step);
-    else { ui.spinning = false; ui.result = av[t].name; render(); try{ navigator.vibrate && navigator.vibrate(70); }catch(err){} }
+    else { ui.angle = end % (Math.PI*2); ui.spinning = false; ui.result = av[t].name; render(); try{ navigator.vibrate && navigator.vibrate(70); }catch(err){} }
   });
 }
 
